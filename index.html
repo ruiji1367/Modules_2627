@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Class Materials</title>
+<style>
+    :root {
+        --bg: #eef1f5;
+        --surface: #ffffff;
+        --ink: #14213d;
+        --muted: #5b6577;
+        --line: #d5dbe5;
+        --accent: #1d4ed8;
+        --accent-soft: #e3ebff;
+        --folder: #b7791f;
+        --folder-soft: #fdf1d8;
+        --error: #a4133c;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg: #0e1524;
+            --surface: #16203a;
+            --ink: #e8edf7;
+            --muted: #9aa6bd;
+            --line: #2a3654;
+            --accent: #7aa2ff;
+            --accent-soft: #1f2f5c;
+            --folder: #f0b957;
+            --folder-soft: #3a2f16;
+            --error: #ff8fa8;
+        }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        line-height: 1.5;
+    }
+
+    header {
+        background: var(--ink);
+        color: var(--bg);
+        padding: 32px 20px 28px;
+    }
+
+    .wrap {
+        max-width: 860px;
+        margin: 0 auto;
+    }
+
+    header h1 {
+        margin: 0 0 4px;
+        font-size: clamp(1.6rem, 4vw, 2.2rem);
+        letter-spacing: -0.02em;
+    }
+
+    header p { margin: 0; opacity: 0.75; }
+
+    main {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 24px 20px 60px;
+    }
+
+    .bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+    }
+
+    .bar button {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        color: var(--ink);
+        font: inherit;
+        font-size: 0.9rem;
+        padding: 8px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .bar button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+    .bar button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    nav.crumbs {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.9rem;
+        color: var(--muted);
+        min-width: 0;
+    }
+
+    nav.crumbs a {
+        color: var(--accent);
+        text-decoration: none;
+        padding: 2px 4px;
+        border-radius: 4px;
+        overflow-wrap: anywhere;
+    }
+
+    nav.crumbs a:hover { text-decoration: underline; }
+    nav.crumbs [aria-current] { color: var(--ink); font-weight: 600; padding: 2px 4px; overflow-wrap: anywhere; }
+
+    ul.list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    ul.list li + li { border-top: 1px solid var(--line); }
+
+    .item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px;
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .item:hover { background: var(--accent-soft); }
+
+    .icon {
+        flex: none;
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        font-size: 1.3rem;
+        border-radius: 8px;
+        background: var(--accent-soft);
+    }
+
+    .item.dir .icon { background: var(--folder-soft); }
+
+    .name {
+        font-weight: 600;
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .meta {
+        margin-left: auto;
+        flex: none;
+        color: var(--muted);
+        font-size: 0.85rem;
+    }
+
+    .state {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 28px 20px;
+        text-align: center;
+        color: var(--muted);
+    }
+
+    .state.error { color: var(--error); border-color: var(--error); }
+    .state strong { display: block; color: inherit; margin-bottom: 6px; }
+    .state button {
+        margin-top: 14px;
+        font: inherit;
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: 0;
+        background: var(--accent);
+        color: var(--bg);
+        cursor: pointer;
+    }
+
+    .skeleton { padding: 14px 16px; display: flex; gap: 14px; align-items: center; }
+    .skeleton + .skeleton { border-top: 1px solid var(--line); }
+    .skeleton i { width: 40px; height: 40px; border-radius: 8px; background: var(--line); }
+    .skeleton b { height: 14px; flex: 1; max-width: 240px; border-radius: 4px; background: var(--line); }
+    .skeleton i, .skeleton b { animation: pulse 1.2s ease-in-out infinite; }
+
+    @keyframes pulse { 50% { opacity: 0.4; } }
+
+    :focus-visible {
+        outline: 3px solid var(--accent);
+        outline-offset: -3px;
+        border-radius: 6px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .skeleton i, .skeleton b { animation: none; }
+    }
+
+    @media (max-width: 520px) {
+        .meta { display: none; }
+        .item { padding: 12px; }
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <div class="wrap">
+        <h1>Class Materials</h1>
+        <p>Open a folder to find your lesson.</p>
+    </div>
+</header>
+
+<main>
+    <div class="bar">
+        <button id="backButton" type="button" aria-label="Go to parent folder">← Back</button>
+        <button id="homeButton" type="button" aria-label="Go to the top folder">⌂ Home</button>
+        <nav class="crumbs" id="crumbs" aria-label="Current location"></nav>
+    </div>
+
+    <div id="directory" aria-live="polite" aria-busy="true"></div>
+</main>
+
+<script>
+    /*
+     * HOW: The GitHub Contents API lists the files and folders in the
+     * repository. Each entry becomes a link on this page.
+     *
+     * WHY: A browser can't ask Vercel for a folder listing, but GitHub
+     * already knows the repository structure.
+     *
+     * The current folder is stored in the URL hash (#/Week-1/Lab), so the
+     * browser's back button works and a folder can be shared as a link.
+     */
+
+    const CONFIG = {
+        owner: "ruiji1367",
+        repo: "AppDev_Modules",
+        branch: "main"
+    };
+
+    const directory = document.getElementById("directory");
+    const crumbs = document.getElementById("crumbs");
+    const backButton = document.getElementById("backButton");
+    const homeButton = document.getElementById("homeButton");
+
+    let currentPath = "";
+    let requestId = 0;
+
+    const ICONS = {
+        html: "🌐", htm: "🌐", pdf: "📕", ppt: "📊", pptx: "📊",
+        doc: "📄", docx: "📄", txt: "📝", md: "📝", js: "🟨",
+        css: "🎨", json: "⚙️", png: "🖼️", jpg: "🖼️", jpeg: "🖼️",
+        gif: "🖼️", svg: "🖼️", zip: "🗜️"
+    };
+
+    function extensionOf(name) {
+        return name.includes(".") ? name.split(".").pop().toLowerCase() : "";
+    }
+
+    function escapeHtml(value) {
+        return value
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function encodePath(path) {
+        return path.split("/").map(encodeURIComponent).join("/");
+    }
+
+    function pathFromHash() {
+        const raw = decodeURIComponent(location.hash.replace(/^#\/?/, ""));
+        return raw.replace(/\/+$/, "");
+    }
+
+    function hashFor(path) {
+        return path ? "#/" + encodePath(path) : "#/";
+    }
+
+    function renderCrumbs(path) {
+        const parts = path ? path.split("/") : [];
+        let html = parts.length
+            ? `<a href="#/">Class Materials</a>`
+            : `<span aria-current="page">Class Materials</span>`;
+
+        parts.forEach((part, index) => {
+            const target = parts.slice(0, index + 1).join("/");
+            html += `<span aria-hidden="true">/</span>`;
+            html += index === parts.length - 1
+                ? `<span aria-current="page">${escapeHtml(part)}</span>`
+                : `<a href="${hashFor(target)}">${escapeHtml(part)}</a>`;
+        });
+
+        crumbs.innerHTML = html;
+        backButton.disabled = !path;
+        homeButton.disabled = !path;
+    }
+
+    function showLoading() {
+        directory.setAttribute("aria-busy", "true");
+        directory.innerHTML = `<div class="list" style="background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden">`
+            + `<div class="skeleton"><i></i><b></b></div>`.repeat(4)
+            + `</div>`;
+    }
+
+    function showError(status) {
+        let title = "Can't load this folder";
+        let help = "Check your internet connection and try again.";
+
+        if (status === 404) {
+            title = "Folder not found";
+            help = "It may have been moved or renamed. Go back to the top folder.";
+        } else if (status === 403 || status === 429) {
+            title = "Too many requests";
+            help = "GitHub limits how often this page can load folders. Wait a few minutes and try again.";
+        }
+
+        directory.setAttribute("aria-busy", "false");
+        directory.innerHTML = `
+            <div class="state error" role="alert">
+                <strong>${title}</strong>
+                ${help}
+                <br>
+                <button type="button" id="retryButton">Try again</button>
+            </div>`;
+
+        document.getElementById("retryButton").addEventListener("click", () => loadDirectory(currentPath));
+    }
+
+    async function loadDirectory(path) {
+        currentPath = path;
+        const thisRequest = ++requestId;
+
+        renderCrumbs(path);
+        showLoading();
+
+        try {
+            const apiUrl =
+                `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${encodePath(path)}?ref=${CONFIG.branch}`;
+
+            const response = await fetch(apiUrl);
+
+            if (!response.ok) {
+                const error = new Error("GitHub API error");
+                error.status = response.status;
+                throw error;
+            }
+
+            const data = await response.json();
+
+            // Ignore this result if the student already moved to another folder.
+            if (thisRequest !== requestId) return;
+
+            if (!Array.isArray(data)) {
+                // The path points to a file, not a folder.
+                location.replace(`/${encodePath(path)}`);
+                return;
+            }
+
+            const items = data
+                .filter(item => !item.name.startsWith("."))
+                .filter(item => !(path === "" && item.name === "index.html"))
+                .sort((a, b) => {
+                    if (a.type !== b.type) return a.type === "dir" ? -1 : 1;
+                    return a.name.localeCompare(b.name, undefined, { numeric: true });
+                });
+
+            directory.setAttribute("aria-busy", "false");
+
+            if (items.length === 0) {
+                directory.innerHTML = `
+                    <div class="state">
+                        <strong>This folder is empty</strong>
+                        Nothing has been added here yet.
+                    </div>`;
+                return;
+            }
+
+            const rows = items.map(item => {
+                const name = escapeHtml(item.name);
+
+                if (item.type === "dir") {
+                    return `
+                        <li>
+                            <a class="item dir" href="${hashFor(item.path)}">
+                                <span class="icon" aria-hidden="true">📁</span>
+                                <span class="name">${name}</span>
+                                <span class="meta">Folder</span>
+                            </a>
+                        </li>`;
+                }
+
+                const ext = extensionOf(item.name);
+                const label = ext ? ext.toUpperCase() : "File";
+
+                return `
+                    <li>
+                        <a class="item" href="/${encodePath(item.path)}">
+                            <span class="icon" aria-hidden="true">${ICONS[ext] ?? "📄"}</span>
+                            <span class="name">${name}</span>
+                            <span class="meta">${escapeHtml(label)}</span>
+                        </a>
+                    </li>`;
+            });
+
+            directory.innerHTML = `<ul class="list">${rows.join("")}</ul>`;
+
+        } catch (error) {
+            if (thisRequest !== requestId) return;
+            console.error(error);
+            showError(error.status);
+        }
+    }
+
+    backButton.addEventListener("click", () => {
+        if (!currentPath) return;
+        const parts = currentPath.split("/");
+        parts.pop();
+        location.hash = hashFor(parts.join("/"));
+    });
+
+    homeButton.addEventListener("click", () => {
+        location.hash = hashFor("");
+    });
+
+    window.addEventListener("hashchange", () => loadDirectory(pathFromHash()));
+
+    loadDirectory(pathFromHash());
+</script>
+
+</body>
+</html>
