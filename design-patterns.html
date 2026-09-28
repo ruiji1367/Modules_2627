@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IT1814 — Design Patterns</title>
+<style>
+  :root{
+    --paper:#EDE8DA; --paper-alt:#E3DDCB; --panel:#F5F1E4;
+    --ink:#1E2A35; --ink-soft:#4B5A66;
+    --blue:#2B5C86; --blue-deep:#16324F; --blue-tint:#DCE7EE;
+    --amber:#A85A26; --amber-tint:#F1E0CE;
+    --sage:#3F7157; --sage-tint:#DCE8DE;
+    --line:#16324F40; --line-soft:#16324F22;
+    --mono: ui-monospace, 'Cascadia Code', 'Fira Code', Menlo, Consolas, monospace;
+    --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; font-family:var(--sans); color:var(--ink); background:var(--paper);
+    background-image:
+      linear-gradient(var(--line-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+    background-size:28px 28px;
+    line-height:1.55;
+  }
+  a{color:var(--blue);}
+  button{font-family:inherit;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 20px;}
+  .tick{position:relative;}
+  .tick::before,.tick::after{content:"";position:absolute;width:10px;height:10px;border:1.5px solid var(--blue-deep);opacity:.55;}
+  .tick::before{top:-1px;left:-1px;border-right:none;border-bottom:none;}
+  .tick::after{bottom:-1px;right:-1px;border-left:none;border-top:none;}
+
+  /* ---------- header ---------- */
+  header.masthead{
+    background:var(--blue-deep); color:var(--paper); padding:16px 0 14px;
+    border-bottom:3px solid var(--amber);
+    position:sticky; top:0; z-index:100;
+    box-shadow:0 6px 14px -8px rgba(0,0,0,.45);
+  }
+  header.masthead .wrap{display:flex; flex-wrap:wrap; align-items:flex-end; gap:18px; justify-content:space-between;}
+  .brand{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;}
+  .brand .code{font-family:var(--mono); font-size:.85rem; letter-spacing:.04em; border:1px solid #ffffff55; padding:3px 8px; border-radius:3px;}
+  .brand h1{font-family:var(--serif); font-weight:700; font-size:1.9rem; margin:6px 0 0;}
+  header.masthead p.sub{margin:6px 0 0; color:#D9E3EC; font-size:1rem; max-width:46ch;}
+  nav.toc{display:flex; flex-wrap:wrap; gap:6px 14px; font-size:.85rem;}
+  nav.toc a{color:#CFE0EC; text-decoration:none; border-bottom:1px dashed #ffffff40; padding-bottom:1px;}
+  nav.toc a:hover, nav.toc a:focus-visible{color:#fff; border-color:#fff;}
+
+  section{padding:38px 0; scroll-margin-top:132px;}
+  section.alt{background:var(--paper-alt);}
+  h2.section-title{font-family:var(--serif); font-size:1.5rem; margin:0 0 6px; color:var(--blue-deep);}
+  p.section-lede{margin:0 0 22px; color:var(--ink-soft); max-width:66ch;}
+
+  /* ---------- intro ---------- */
+  .blueprint-box{
+    background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:20px 22px;
+    display:grid; grid-template-columns:1fr; gap:16px;
+  }
+  @media(min-width:760px){ .blueprint-box{grid-template-columns:1.3fr 1fr;} }
+  .blueprint-box .def{font-size:1.05rem;}
+  .blueprint-box .def strong{color:var(--blue-deep);}
+  .analogy{
+    font-family:var(--serif); font-style:italic; color:var(--blue-deep);
+    border-left:3px solid var(--amber); padding:6px 0 6px 14px; margin:0;
+  }
+  .parts-row{display:flex; flex-wrap:wrap; gap:10px; margin-top:14px;}
+  .parts-row span{
+    font-family:var(--mono); font-size:.78rem; background:var(--blue-tint); color:var(--blue-deep);
+    padding:4px 9px; border-radius:3px; border:1px solid var(--line-soft);
+  }
+
+  /* ---------- how to read flow ---------- */
+  .flow{display:flex; flex-wrap:wrap; align-items:stretch; gap:0; margin-top:18px;}
+  .flow-step{
+    background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:12px 14px;
+    cursor:pointer; flex:1 1 140px; min-width:120px; text-align:left; font-family:inherit; color:var(--ink);
+  }
+  .flow-step .n{font-family:var(--mono); font-size:.72rem; color:var(--amber);}
+  .flow-step .t{font-weight:600; font-size:.92rem; margin-top:2px;}
+  .flow-step:hover, .flow-step:focus-visible{border-color:var(--blue); outline:none;}
+  .flow-step.active{background:var(--blue-deep); color:#fff; border-color:var(--blue-deep);}
+  .flow-step.active .n{color:#F1C08A;}
+  .flow-arrow{display:flex; align-items:center; justify-content:center; padding:0 6px; color:var(--ink-soft); font-size:1.1rem;}
+  .flow-detail{
+    margin-top:14px; background:var(--blue-tint); border:1px solid var(--line-soft); border-radius:4px;
+    padding:14px 16px; font-size:.95rem; min-height:1.4em;
+  }
+  .flow-detail b{color:var(--blue-deep);}
+
+  /* ---------- category cards ---------- */
+  .cat-grid{display:grid; grid-template-columns:1fr; gap:14px;}
+  @media(min-width:700px){ .cat-grid{grid-template-columns:repeat(3,1fr);} }
+  .cat-card{
+    text-align:left; font-family:inherit; cursor:pointer; border-radius:4px; padding:18px 18px 16px;
+    border:1px solid var(--line); background:var(--panel); position:relative;
+  }
+  .cat-card .bar{position:absolute; left:0; top:0; bottom:0; width:5px; border-radius:4px 0 0 4px;}
+  .cat-card h3{margin:0 0 4px; font-family:var(--serif); font-size:1.2rem;}
+  .cat-card p{margin:0; color:var(--ink-soft); font-size:.92rem;}
+  .cat-card .count{margin-top:10px; font-family:var(--mono); font-size:.75rem; color:var(--ink-soft);}
+  .cat-card[data-cat="creational"] .bar{background:var(--blue);}
+  .cat-card[data-cat="structural"] .bar{background:var(--amber);}
+  .cat-card[data-cat="behavioral"] .bar{background:var(--sage);}
+  .cat-card.selected{border-color:var(--blue-deep); box-shadow:0 0 0 1px var(--blue-deep) inset;}
+
+  /* ---------- explorer layout ---------- */
+  .explorer{display:grid; grid-template-columns:1fr; gap:20px;}
+  @media(min-width:900px){ .explorer{grid-template-columns:260px 1fr;} }
+  .side{background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:14px; align-self:start; position:sticky; top:108px;}
+  .side input[type="search"]{
+    width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:3px; font-size:.9rem;
+    font-family:inherit; margin-bottom:10px; background:#fff;
+  }
+  .progress-line{font-size:.75rem; color:var(--ink-soft); margin-bottom:10px; font-family:var(--mono);}
+  .progress-bar{height:5px; background:var(--line-soft); border-radius:3px; overflow:hidden; margin-bottom:12px;}
+  .progress-bar > span{display:block; height:100%; background:var(--sage); transition:width .25s;}
+  .pattern-nav{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; max-height:58vh; overflow:auto;}
+  .pattern-nav li button{
+    width:100%; text-align:left; background:transparent; border:none; border-left:3px solid transparent;
+    padding:7px 9px; font-size:.88rem; border-radius:2px; cursor:pointer; color:var(--ink);
+    display:flex; justify-content:space-between; gap:6px; align-items:center;
+  }
+  .pattern-nav li button:hover, .pattern-nav li button:focus-visible{background:var(--blue-tint);}
+  .pattern-nav li button.active{background:var(--blue-deep); color:#fff; border-left-color:var(--amber);}
+  .pattern-nav li button .dot{width:6px; height:6px; border-radius:50%; background:var(--line); flex:none;}
+  .pattern-nav li button.visited .dot{background:var(--sage);}
+  .pattern-nav li button.active .dot{background:#fff;}
+  .cat-tag{font-family:var(--mono); font-size:.65rem; text-transform:none;}
+
+  .detail{background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:22px 24px 26px;}
+  .detail .empty{color:var(--ink-soft); font-style:italic;}
+  .detail-head{display:flex; flex-wrap:wrap; gap:10px; align-items:baseline; justify-content:space-between; border-bottom:1px solid var(--line-soft); padding-bottom:10px; margin-bottom:16px;}
+  .detail-head h3{margin:0; font-family:var(--serif); font-size:1.55rem; color:var(--blue-deep);}
+  .badge{font-family:var(--mono); font-size:.72rem; padding:3px 9px; border-radius:3px; white-space:nowrap;}
+  .badge.creational{background:var(--blue-tint); color:var(--blue-deep);}
+  .badge.structural{background:var(--amber-tint); color:var(--amber);}
+  .badge.behavioral{background:var(--sage-tint); color:var(--sage);}
+
+  .chain{display:flex; flex-direction:column; gap:10px; margin-bottom:18px;}
+  .chain-row{display:grid; grid-template-columns:112px 1fr; gap:12px; align-items:start;}
+  @media(max-width:520px){ .chain-row{grid-template-columns:1fr;} }
+  .chain-row .lbl{font-family:var(--mono); font-size:.72rem; color:var(--amber); padding-top:2px;}
+  .chain-row .txt{font-size:.96rem;}
+  .idea-box{background:var(--blue-deep); color:#fff; border-radius:4px; padding:14px 16px; margin:16px 0;}
+  .idea-box .lbl{font-family:var(--mono); font-size:.72rem; color:#F1C08A;}
+  .idea-box p{margin:4px 0 0; font-size:1rem;}
+
+  .toggle-row{display:flex; gap:8px; margin:20px 0 10px; flex-wrap:wrap;}
+  .toggle-btn{
+    border:1px solid var(--line); background:#fff; padding:7px 14px; border-radius:3px; cursor:pointer;
+    font-size:.85rem; font-family:inherit;
+  }
+  .toggle-btn.active.bad{background:var(--amber); border-color:var(--amber); color:#fff;}
+  .toggle-btn.active.good{background:var(--sage); border-color:var(--sage); color:#fff;}
+  .code-panel{position:relative; margin-top:4px;}
+  pre{
+    background:var(--blue-deep); color:#E7EEF3; padding:14px 16px; border-radius:4px; overflow-x:auto;
+    font-family:var(--mono); font-size:.82rem; line-height:1.5; margin:0; max-width:100%;
+  }
+  .copy-btn{
+    position:absolute; top:8px; right:8px; background:#ffffff22; color:#fff; border:1px solid #ffffff44;
+    border-radius:3px; font-size:.72rem; padding:4px 8px; cursor:pointer;
+  }
+  .copy-btn:hover{background:#ffffff3a;}
+
+  details.consequences{border:1px solid var(--line-soft); border-radius:4px; margin-top:18px;}
+  details.consequences > summary{cursor:pointer; padding:10px 14px; font-weight:600; font-size:.9rem; list-style:none;}
+  details.consequences > summary::-webkit-details-marker{display:none;}
+  details.consequences > summary::before{content:"▸ "; color:var(--amber);}
+  details.consequences[open] > summary::before{content:"▾ ";}
+  .cons-body{padding:0 16px 14px;}
+  .cons-cols{display:grid; grid-template-columns:1fr; gap:12px;}
+  @media(min-width:560px){ .cons-cols{grid-template-columns:1fr 1fr;} }
+  .cons-cols h4{margin:0 0 6px; font-size:.82rem; font-family:var(--mono);}
+  .cons-cols ul{margin:0; padding-left:18px; font-size:.9rem;}
+  .cons-cols .helps h4{color:var(--sage);}
+  .cons-cols .costs h4{color:var(--amber);}
+
+  .recognize{margin-top:16px; background:var(--amber-tint); border-radius:4px; padding:12px 14px; font-size:.9rem;}
+  .recognize b{color:var(--amber);}
+
+  .quick-check{margin-top:20px; border-top:1px dashed var(--line); padding-top:16px;}
+  .quick-check h4{margin:0 0 8px; font-family:var(--serif); font-size:1.05rem;}
+  .qc-scenario{font-size:.94rem; margin-bottom:10px;}
+  .qc-choices{display:flex; flex-direction:column; gap:6px;}
+  .qc-choice{
+    text-align:left; border:1px solid var(--line); background:#fff; padding:9px 12px; border-radius:3px;
+    cursor:pointer; font-size:.88rem; font-family:inherit;
+  }
+  .qc-choice:hover{border-color:var(--blue);}
+  .qc-choice.correct{background:var(--sage-tint); border-color:var(--sage);}
+  .qc-choice.wrong{background:var(--amber-tint); border-color:var(--amber);}
+  .qc-choice[disabled]{cursor:default;}
+  .qc-feedback{margin-top:10px; font-size:.9rem; padding:10px 12px; border-radius:3px; display:none;}
+  .qc-feedback.show{display:block;}
+  .qc-feedback.correct-fb{background:var(--sage-tint);}
+  .qc-feedback.wrong-fb{background:var(--amber-tint);}
+
+  /* ---------- scenario matcher ---------- */
+  .scenario-grid{display:grid; grid-template-columns:1fr; gap:12px;}
+  @media(min-width:700px){ .scenario-grid{grid-template-columns:1fr 1fr;} }
+  .scenario-card{background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:14px 16px;}
+  .scenario-card .q{font-size:.92rem;}
+  .scenario-card .reveal-btn{
+    margin-top:10px; background:var(--blue-deep); color:#fff; border:none; padding:6px 12px; border-radius:3px;
+    cursor:pointer; font-size:.8rem;
+  }
+  .scenario-card .answer{margin-top:8px; font-size:.85rem; display:none; background:var(--sage-tint); border-radius:3px; padding:8px 10px;}
+  .scenario-card .answer.show{display:block;}
+  .scenario-card .answer a{font-weight:600;}
+
+  /* ---------- comparison table ---------- */
+  .table-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:4px;}
+  table.compare{border-collapse:collapse; width:100%; min-width:640px; font-size:.87rem;}
+  table.compare th{background:var(--blue-deep); color:#fff; text-align:left; padding:9px 12px; font-weight:600; font-family:var(--mono); font-size:.75rem;}
+  table.compare td{padding:9px 12px; border-top:1px solid var(--line-soft);}
+  table.compare tr.rowbtn{cursor:pointer;}
+  table.compare tr.rowbtn:hover{background:var(--blue-tint);}
+  table.compare .catcell{font-size:.75rem; font-family:var(--mono);}
+
+  /* ---------- decision helper ---------- */
+  .decision-box{background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:18px 20px;}
+  .decision-box .q{font-family:var(--serif); font-size:1.1rem; margin:0 0 12px; color:var(--blue-deep);}
+  .decision-opts{display:flex; flex-wrap:wrap; gap:8px;}
+  .decision-opts button{
+    background:#fff; border:1px solid var(--line); padding:8px 14px; border-radius:3px; cursor:pointer; font-size:.87rem;
+  }
+  .decision-opts button:hover{border-color:var(--blue);}
+  .decision-trail{font-size:.78rem; color:var(--ink-soft); margin-bottom:10px; font-family:var(--mono);}
+  .decision-result{margin-top:14px; background:var(--blue-deep); color:#fff; border-radius:4px; padding:12px 14px; display:none;}
+  .decision-result.show{display:block;}
+  .decision-result a{color:#F1C08A;}
+
+  /* ---------- cheat sheet ---------- */
+  .cheat-grid{display:grid; grid-template-columns:1fr; gap:18px;}
+  @media(min-width:760px){ .cheat-grid{grid-template-columns:repeat(3,1fr);} }
+  .cheat-col{background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:16px 18px;}
+  .cheat-col h3{margin:0 0 4px; font-family:var(--serif); font-size:1.15rem;}
+  .cheat-col .desc{font-size:.82rem; color:var(--ink-soft); margin:0 0 12px;}
+  .cheat-col[data-cat="creational"] h3{color:var(--blue-deep);}
+  .cheat-col[data-cat="structural"] h3{color:var(--amber);}
+  .cheat-col[data-cat="behavioral"] h3{color:var(--sage);}
+  .cheat-item{font-size:.86rem; padding:6px 0; border-top:1px solid var(--line-soft); cursor:pointer;}
+  .cheat-item:first-of-type{border-top:none;}
+  .cheat-item b{display:block;}
+  .cheat-item span{color:var(--ink-soft);}
+
+  /* ---------- quiz ---------- */
+  .quiz-box{background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:20px 22px;}
+  .quiz-progress{font-family:var(--mono); font-size:.78rem; color:var(--ink-soft); margin-bottom:10px;}
+  .quiz-q{font-size:1rem; margin-bottom:12px;}
+  .quiz-choices{display:flex; flex-direction:column; gap:8px;}
+  .quiz-choice{text-align:left; border:1px solid var(--line); background:#fff; padding:10px 13px; border-radius:3px; cursor:pointer; font-size:.9rem;}
+  .quiz-choice:hover{border-color:var(--blue);}
+  .quiz-choice.correct{background:var(--sage-tint); border-color:var(--sage);}
+  .quiz-choice.wrong{background:var(--amber-tint); border-color:var(--amber);}
+  .quiz-feedback{margin-top:12px; font-size:.88rem; background:#fff; border-radius:3px; padding:10px 12px; display:none;}
+  .quiz-feedback.show{display:block;}
+  .quiz-nav{margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;}
+  .quiz-nav button{background:var(--blue-deep); color:#fff; border:none; padding:9px 16px; border-radius:3px; cursor:pointer; font-size:.88rem;}
+  .quiz-nav button[disabled]{opacity:.4; cursor:default;}
+  .quiz-score{text-align:center; padding:24px 0;}
+  .quiz-score .big{font-family:var(--serif); font-size:2.4rem; color:var(--blue-deep);}
+  .quiz-score .buttons{margin-top:14px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;}
+  .quiz-score .buttons button{background:var(--blue-deep); color:#fff; border:none; padding:9px 16px; border-radius:3px; cursor:pointer;}
+  .quiz-score .buttons button.secondary{background:transparent; color:var(--blue-deep); border:1px solid var(--blue-deep);}
+
+  footer{padding:26px 0 40px; text-align:center; color:var(--ink-soft); font-size:.82rem;}
+
+  :focus-visible{outline:2px solid var(--amber); outline-offset:2px;}
+  @media(prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="brand">
+      <span class="code">IT1814</span>
+      <h1>Design Patterns</h1>
+    </div>
+    <nav class="toc">
+      <a href="#read">How to read a pattern</a>
+      <a href="#explore">Explore patterns</a>
+      <a href="#match">Which pattern?</a>
+      <a href="#table">Comparison table</a>
+      <a href="#helper">Decision helper</a>
+      <a href="#cheatsheet">Cheat sheet</a>
+      <a href="#quiz">Quiz</a>
+    </nav>
+  </div>
+  <div class="wrap"><p class="sub">Recognize the problem first. Then understand the pattern.</p></div>
+</header>
+
+<section id="intro">
+  <div class="wrap">
+    <h2 class="section-title">What is a design pattern?</h2>
+    <div class="blueprint-box tick">
+      <div class="def">
+        <p><strong>A design pattern is a reusable design idea for a recurring software-design problem</strong> — not a piece of code you copy and paste. It is a general way of organizing classes and objects, and you adapt it to your own application.</p>
+        <p class="analogy">"An architectural blueprint is not the finished house. It is a guide for how the house can be designed."</p>
+      </div>
+      <div>
+        <p style="margin:0 0 6px; font-size:.9rem; color:var(--ink-soft);">Every pattern has four parts:</p>
+        <div class="parts-row">
+          <span>Pattern Name</span><span>Problem</span><span>Solution</span><span>Consequences</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="read">
+  <div class="wrap">
+    <h2 class="section-title">How to read a pattern</h2>
+    <p class="section-lede">Every pattern in this lesson follows the same chain. Click each step to see how it plays out in one example.</p>
+    <div class="flow" id="flowSteps"></div>
+    <div class="flow-detail" id="flowDetail">Click a step above to see how it works, using one running example.</div>
+  </div>
+</section>
+
+<section id="categories">
+  <div class="wrap">
+    <h2 class="section-title">Three families of problems</h2>
+    <p class="section-lede">Click a category to jump straight to its patterns below.</p>
+    <div class="cat-grid" id="catGrid"></div>
+  </div>
+</section>
+
+<section class="alt" id="explore">
+  <div class="wrap">
+    <h2 class="section-title">Explore the 15 patterns</h2>
+    <p class="section-lede">Search or filter by category, pick a pattern, then use the toggle to compare the problematic design against the pattern-based one.</p>
+    <div class="explorer">
+      <aside class="side">
+        <input type="search" id="searchBox" placeholder="Search pattern name…" aria-label="Search patterns">
+        <div class="progress-line" id="progressLine">0 of 15 patterns explored</div>
+        <div class="progress-bar"><span id="progressBar" style="width:0%"></span></div>
+        <ul class="pattern-nav" id="patternNav"></ul>
+      </aside>
+      <div class="detail" id="detail">
+        <p class="empty">Pick a pattern from the list to begin — or start with the category that matches a problem you've run into.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="match">
+  <div class="wrap">
+    <h2 class="section-title">Which pattern problem is this?</h2>
+    <p class="section-lede">Read each scenario and think of the pattern before revealing the answer.</p>
+    <div class="scenario-grid" id="scenarioGrid"></div>
+  </div>
+</section>
+
+<section class="alt" id="table">
+  <div class="wrap">
+    <h2 class="section-title">Pattern comparison table</h2>
+    <p class="section-lede">Click a row to jump to that pattern's full explanation.</p>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead><tr><th>Pattern</th><th>Category</th><th>Main problem</th><th>Main idea</th></tr></thead>
+        <tbody id="compareBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="helper">
+  <div class="wrap">
+    <h2 class="section-title">Don't memorize the name — recognize the problem</h2>
+    <p class="section-lede">Answer a couple of questions and land on a pattern, instead of trying to recall 15 names.</p>
+    <div class="decision-box tick" id="decisionBox"></div>
+  </div>
+</section>
+
+<section class="alt" id="cheatsheet">
+  <div class="wrap">
+    <h2 class="section-title">Design pattern cheat sheet</h2>
+    <p class="section-lede">Click any pattern to open its full explanation above.</p>
+    <div class="cheat-grid" id="cheatGrid"></div>
+  </div>
+</section>
+
+<section id="quiz">
+  <div class="wrap">
+    <h2 class="section-title">Final quiz</h2>
+    <p class="section-lede">Ten scenarios. Pick the pattern that fits each one.</p>
+    <div class="quiz-box" id="quizBox"></div>
+  </div>
+</section>
+
+<footer>IT1814 — Design Patterns · Built for recognizing problems, not memorizing names.</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================= DATA ============================= */
+
+var CATS = {
+  creational: {label:"Creational", tag:"How objects are created."},
+  structural: {label:"Structural", tag:"How classes and objects are connected."},
+  behavioral: {label:"Behavioral", tag:"How objects communicate and share responsibilities."}
+};
+
+var READ_FLOW = [
+  {n:"1", t:"Problem", text:"<b>Problem:</b> \u201cMy class is becoming too large.\u201d"},
+  {n:"2", t:"Cause", text:"<b>Cause:</b> Different responsibilities or algorithms are being placed in one class."},
+  {n:"3", t:"Effect", text:"<b>Effect:</b> Changes become harder and can break existing code."},
+  {n:"4", t:"Pattern", text:"<b>Pattern:</b> Move the changing behavior into separate classes."},
+  {n:"5", t:"Why it helps", text:"<b>Why it helps:</b> The main class no longer needs to know every implementation."},
+  {n:"6", t:"Consequences", text:"<b>Consequences:</b> More classes are introduced, but the design becomes easier to change."}
+];
+
+var PATTERNS = [
+{id:"singleton", name:"Singleton", cat:"creational",
+ shortProblem:"Need exactly one shared instance.",
+ shortIdea:"Private constructor + one static access point.",
+ problem:"Your app needs exactly one configuration manager, but nothing stops multiple parts of the code from creating their own new instances.",
+ cause:"The class has a public constructor, so any code can call `new` and create another copy.",
+ effect:"Different parts of the program end up working with different instances holding different data \u2014 settings drift out of sync and bugs appear that are hard to trace.",
+ idea:"Make the constructor private, and provide one static method that returns the same stored instance every time.",
+ why:"Because construction is blocked from the outside, every caller is forced through the same access point, so there is only ever one instance to reason about.",
+ badCode:"public class ConfigManager {\n    public ConfigManager() { /* loads settings */ }\n}\n\n// Two different parts of the app:\nvar a = new ConfigManager();\nvar b = new ConfigManager(); // different object, different state",
+ goodCode:"public class ConfigManager {\n    private static ConfigManager _instance;\n    private ConfigManager() { /* loads settings */ }\n    public static ConfigManager Instance =>\n        _instance ??= new ConfigManager();\n}\n\n// Anywhere in the app:\nvar a = ConfigManager.Instance;\nvar b = ConfigManager.Instance; // same object",
+ helps:["Guarantees one shared instance","Gives one clear access point instead of scattered globals"],
+ introduces:["Global-ish state any class can reach, which can hide dependencies","Mixes \u2018control the instance count\u2019 with the class\u2019s real job, which can conflict with Single Responsibility"],
+ recognize:"Think Singleton when the problem is really \u2018this must exist exactly once,\u2019 not just \u2018this class is convenient to access from anywhere.\u2019",
+ quick:{scenario:"A logging class writes to the same file from many parts of the app. If two different logger objects exist, they can write over each other's output. Which pattern fits?",
+   choices:["Singleton \u2014 one shared instance controls the file","Factory Method \u2014 hides which logger class is created","Decorator \u2014 adds formatting to log messages","Proxy \u2014 delays creating the logger"],
+   correct:0, explain:"The core problem is that more than one instance can exist when only one should. Singleton solves that by controlling instantiation and providing one access point \u2014 the others solve different problems (varying what's created, adding behavior, or delaying creation)."}},
+
+{id:"factory-method", name:"Factory Method", cat:"creational",
+ shortProblem:"Object type can vary during creation.",
+ shortIdea:"A factory method returns the product by its interface.",
+ problem:"TransportApp only ships goods by Truck. Now the business needs Ship transport too, and more types are coming.",
+ cause:"Client code creates `new Truck()` directly, so it is tightly coupled to that one concrete class.",
+ effect:"Every time a new transport type is added, you must find and edit every place that says `new Truck()`, and conditionals pile up.",
+ idea:"Move object creation into a factory method that returns the product by its common interface. The client asks for a transport without deciding which concrete class to build.",
+ why:"The client only depends on the `Transport` interface, not on `Truck` or `Ship` \u2014 new transport types can be added by adding a new factory, without touching client code.",
+ badCode:"public class Logistics {\n    public void PlanDelivery(string type) {\n        if (type == \"road\") {\n            var t = new Truck();\n            t.Deliver();\n        } else if (type == \"sea\") {\n            var s = new Ship();\n            s.Deliver();\n        }\n        // every new type = another branch here\n    }\n}",
+ goodCode:"public interface Transport { void Deliver(); }\npublic class Truck : Transport { public void Deliver() {...} }\npublic class Ship : Transport { public void Deliver() {...} }\n\npublic abstract class Logistics {\n    public abstract Transport CreateTransport(); // factory method\n    public void PlanDelivery() {\n        Transport t = CreateTransport();\n        t.Deliver();\n    }\n}\npublic class RoadLogistics : Logistics {\n    public override Transport CreateTransport() => new Truck();\n}",
+ helps:["Client code depends on an interface, not a concrete class","New product types don't require editing existing client code"],
+ introduces:["An extra class hierarchy just for creation","Can feel like overkill if there's genuinely only ever one product type"],
+ recognize:"Think Factory Method when object creation keeps changing and your main code should not depend directly on every concrete product.",
+ quick:{scenario:"A UI toolkit needs to render buttons differently on Windows vs Mac, but the drawing code shouldn't need to decide `new WindowsButton()` vs `new MacButton()` everywhere.",
+   choices:["Factory Method \u2014 the toolkit asks for a Button without choosing the concrete class","Singleton \u2014 one shared Button instance","Adapter \u2014 translate between button interfaces","Composite \u2014 treat buttons and groups of buttons the same way"],
+   correct:0, explain:"The problem is that object creation varies by condition and is scattered through client code. Factory Method moves that decision behind one method so the client only ever talks to the Button interface."}},
+
+{id:"prototype", name:"Prototype", cat:"creational",
+ shortProblem:"Need to copy existing objects.",
+ shortIdea:"The object provides its own Clone() method.",
+ problem:"You have a fully configured Enemy object in a game (stats, equipped items, AI state) and need another one just like it.",
+ cause:"Building a duplicate manually means knowing the object's exact class and copying every field by hand.",
+ effect:"Copy code becomes long, fragile, and breaks silently whenever a new field is added to the class.",
+ idea:"Let the object itself provide a `Clone()` method that knows how to copy its own fields.",
+ why:"The client just calls `Clone()` \u2014 it never needs to know the concrete class or its fields to make a copy.",
+ badCode:"var copy = new Enemy();\ncopy.Hp = original.Hp;\ncopy.Weapon = original.Weapon;\ncopy.Armor = original.Armor;\n// add a new field later? every copy site needs updating",
+ goodCode:"public class Enemy : ICloneable {\n    public int Hp; public string Weapon; public string Armor;\n    public object Clone() => this.MemberwiseClone();\n}\n\nvar copy = (Enemy)original.Clone();",
+ helps:["Copying doesn't require knowing the concrete class","New fields are copied automatically once Clone() handles them"],
+ introduces:["Deep vs. shallow copy needs care \u2014 reference fields may need their own cloning logic"],
+ recognize:"Think Prototype when you keep rebuilding an object that already exists elsewhere, field by field, instead of just copying it.",
+ quick:{scenario:"A document editor lets users duplicate a fully styled shape (color, border, position) on the canvas.",
+   choices:["Prototype \u2014 clone the existing shape","Builder \u2014 construct the shape step-by-step","Bridge \u2014 separate shape from styling","Iterator \u2014 traverse the shapes on canvas"],
+   correct:0, explain:"The need is to copy an already-built object, not construct one from scratch or traverse a collection \u2014 that's exactly what Prototype's Clone() is for."}},
+
+{id:"abstract-factory", name:"Abstract Factory", cat:"creational",
+ shortProblem:"Need a matching family of related products.",
+ shortIdea:"One factory produces a whole matching product family.",
+ problem:"A furniture app must produce a Chair, Sofa, and Coffee Table that all match one style \u2014 Modern, Art Deco, or Victorian \u2014 and never mix styles by accident.",
+ cause:"If each product is created independently, nothing stops a Modern chair from ending up next to a Victorian sofa.",
+ effect:"Mismatched product families slip through, and adding a new style means hunting down every creation call for every product type.",
+ idea:"Create one factory interface that produces a whole family of related products, and swap the entire factory to swap the entire family.",
+ why:"Because one factory object is responsible for the whole family, every product it creates is guaranteed to match.",
+ badCode:"var chair = new ModernChair();\nvar sofa = new VictorianSofa(); // mismatch \u2014 nothing prevents this",
+ goodCode:"public interface IFurnitureFactory {\n    Chair CreateChair(); Sofa CreateSofa(); Table CreateTable();\n}\npublic class ModernFactory : IFurnitureFactory {\n    public Chair CreateChair() => new ModernChair();\n    public Sofa CreateSofa() => new ModernSofa();\n    public Table CreateTable() => new ModernTable();\n}\n\nIFurnitureFactory factory = new ModernFactory();\nvar chair = factory.CreateChair();\nvar sofa = factory.CreateSofa(); // guaranteed Modern too",
+ helps:["Guarantees product families stay consistent","Swapping the whole style is one line \u2014 change the factory"],
+ introduces:["More interfaces and classes than a single Factory Method","Adding a brand-new product type means changing every factory"],
+ recognize:"Think Abstract Factory when you're creating more than one related product and they must match each other, not just one product type.",
+ note:"Factory Method creates one type of product. Abstract Factory creates a matching family of related products.",
+ quick:{scenario:"A cross-platform UI kit must produce a Button, Checkbox, and Scrollbar that all look native \u2014 either all Windows-style or all macOS-style, never mixed.",
+   choices:["Abstract Factory \u2014 one factory builds the whole matching UI family","Factory Method \u2014 creates one product type","Decorator \u2014 wraps a control with extra behavior","Facade \u2014 simplifies a complex subsystem"],
+   correct:0, explain:"The requirement is a matching family of several related products \u2014 the specific problem Abstract Factory solves. Factory Method alone only covers one product type at a time."}},
+
+{id:"builder", name:"Builder", cat:"creational",
+ shortProblem:"Object construction has many steps.",
+ shortIdea:"Build the object step by step, then Build().",
+ problem:"A House needs walls, floor, door, windows, roof, and optionally a garage, pool, and garden \u2014 many parameters, many combinations.",
+ cause:"Trying to cover every combination through the constructor means many optional parameters that are easy to mix up.",
+ effect:"Code like `new House(true,true,true,false,true,false,true)` is unreadable and error-prone.",
+ idea:"Build the object step by step using a builder with chained methods, then call `Build()` at the end.",
+ why:"Each step is named, so construction reads clearly, and you only call the steps you actually need.",
+ badCode:"var house = new House(true, true, true, false, true, false, true);\n// what do these seven booleans even mean?",
+ goodCode:"var house = new HouseBuilder()\n    .BuildWalls()\n    .BuildDoor()\n    .BuildWindows()\n    .BuildRoof()\n    .Build();",
+ helps:["Construction reads clearly, step by step","Only the steps you need are called \u2014 optional parts stay optional"],
+ introduces:["An extra builder class to maintain alongside the product","Overkill for objects with only one or two simple fields"],
+ recognize:"Think Builder when construction has many steps or optional configurations, not just a couple of required fields.",
+ note:"A Director can control the order of the building steps, while the Builder performs the steps themselves \u2014 useful when the same steps must run in a repeatable sequence.",
+ quick:{scenario:"A meal-ordering system builds a Meal from many optional parts (bun, patty, cheese, sauce, sides, drink), and the constructor is unmanageable.",
+   choices:["Builder \u2014 assemble the meal step by step","Prototype \u2014 clone an existing meal","Abstract Factory \u2014 build a matching family of meals","Singleton \u2014 one shared meal instance"],
+   correct:0, explain:"The problem is a complex object with many optional construction steps \u2014 exactly what Builder is for. There's no need for one shared instance or a matching family of products here."}},
+
+{id:"adapter", name:"Adapter", cat:"structural",
+ shortProblem:"Interfaces don't match.",
+ shortIdea:"Translate between two incompatible interfaces.",
+ problem:"Your analytics system produces data in XML, but the third-party analytics service only accepts JSON.",
+ cause:"The two systems were built independently and never agreed on a common data format.",
+ effect:"Without a translation step, the two systems simply cannot talk to each other.",
+ idea:"Build an Adapter that sits between the two, converting XML to JSON before forwarding the request.",
+ why:"Neither the existing system nor the third-party service has to change \u2014 the Adapter absorbs the mismatch.",
+ analogy:"Like a travel adapter: your device stays the same, but the adapter makes the plug compatible with the foreign socket.",
+ badCode:"// Client tries to call the JSON-only service directly with XML data\nthirdPartyService.Send(xmlData); // fails \u2014 wrong format",
+ goodCode:"public class AnalyticsAdapter {\n    private ThirdPartyService _service;\n    public void Send(string xmlData) {\n        string jsonData = ConvertXmlToJson(xmlData);\n        _service.Send(jsonData);\n    }\n}\n\nadapter.Send(xmlData); // Adapter handles the translation",
+ helps:["Lets incompatible interfaces work together without modifying either side"],
+ introduces:["An extra translation layer to maintain","Only fixes the interface mismatch \u2014 doesn't fix deeper design differences"],
+ recognize:"Think Adapter when two existing pieces almost work together, but their interfaces or formats don't match.",
+ quick:{scenario:"A payment module expects `Pay(decimal amount)`, but the new payment gateway SDK only exposes `Charge(int cents, string currency)`.",
+   choices:["Adapter \u2014 translate between the two interfaces","Facade \u2014 simplify a complex subsystem","Bridge \u2014 separate an abstraction from its implementation so both vary independently","Proxy \u2014 control access to the gateway"],
+   correct:0, explain:"The core issue is a format/interface mismatch between two pieces that already do the job you need \u2014 that's specifically what Adapter translates."}},
+
+{id:"bridge", name:"Bridge", cat:"structural",
+ shortProblem:"Two dimensions vary independently.",
+ shortIdea:"Separate abstraction from implementation into two hierarchies.",
+ problem:"You have Circle and Square shapes, each needing Red and Blue versions \u2014 and more shapes and colors are coming.",
+ cause:"Using inheritance for two independent dimensions (shape and color) creates a subclass for every combination.",
+ effect:"Every new shape needs a new subclass for every existing color, and vice versa \u2014 the class count explodes.",
+ idea:"Separate the two dimensions into two independent hierarchies (Shape and Color), and have Shape hold a reference to a Color instead of inheriting a fixed one.",
+ why:"Shape and Color can now each grow independently \u2014 adding a new color doesn't require touching the Shape hierarchy at all.",
+ badCode:"class RedCircle : Circle {}\nclass BlueCircle : Circle {}\nclass RedSquare : Square {}\nclass BlueSquare : Square {}\n// 2 shapes x 2 colors = 4 classes, and growing fast",
+ goodCode:"interface IColor { string Apply(); }\nclass Red : IColor { public string Apply() => \"red\"; }\nclass Blue : IColor { public string Apply() => \"blue\"; }\n\nabstract class Shape {\n    protected IColor color;\n    public Shape(IColor color) { this.color = color; }\n}\nclass Circle : Shape { public Circle(IColor c) : base(c) {} }\n// 2 shapes + 2 colors = 4 classes total, not 2x2",
+ helps:["Two independently-varying dimensions can each grow without multiplying classes","Favors composition over a rigid inheritance tree"],
+ introduces:["More upfront design complexity for cases that don't actually need two independent dimensions"],
+ recognize:"Think Bridge when you notice two things that can each vary on their own, and inheritance would force a class for every combination.",
+ quick:{scenario:"A messaging app supports multiple message types (Text, Image) and multiple delivery channels (Email, SMS, Push) \u2014 subclassing every pairing is getting out of hand.",
+   choices:["Bridge \u2014 separate message type from delivery channel so both vary independently","Decorator \u2014 wrap a message with extra behavior","Composite \u2014 treat single messages and groups of messages alike","Adapter \u2014 translate between incompatible formats"],
+   correct:0, explain:"This is exactly two independently-varying dimensions (message type and channel) \u2014 Bridge separates them so combinations don't require a subclass each."}},
+
+{id:"composite", name:"Composite", cat:"structural",
+ shortProblem:"Treat single objects and groups alike.",
+ shortIdea:"Common interface for individual items and containers.",
+ problem:"An order can contain individual Products, or Boxes that contain more Products and even more Boxes nested inside.",
+ cause:"The client code would otherwise need to check 'is this a Product or a Box?' every time it wants to do something.",
+ effect:"Client code fills up with type checks and special cases for every level of nesting.",
+ idea:"Give Product and Box a common interface (e.g. `CalculatePrice()`), where a Box asks its children for their prices and sums them.",
+ why:"The client can call `CalculatePrice()` on anything \u2014 a single Product or a deeply nested Box \u2014 without caring which one it is.",
+ badCode:"decimal Total(object item) {\n    if (item is Product p) return p.Price;\n    if (item is Box b) {\n        decimal sum = 0;\n        foreach (var child in b.Items) sum += Total(child);\n        return sum;\n    }\n    throw new Exception(\"unknown type\");\n}",
+ goodCode:"interface IOrderItem { decimal CalculatePrice(); }\nclass Product : IOrderItem {\n    public decimal Price;\n    public decimal CalculatePrice() => Price;\n}\nclass Box : IOrderItem {\n    public List<IOrderItem> Items = new();\n    public decimal CalculatePrice() => Items.Sum(i => i.CalculatePrice());\n}\n// item.CalculatePrice(); // works for a Product or a Box, any depth",
+ helps:["Treats individual objects and groups through the same interface","Nesting to any depth works without extra client code"],
+ introduces:["Can make it harder to restrict what type of children a container allows"],
+ recognize:"Think Composite when you're building a tree of part-whole relationships and keep writing 'if it's a group, do X; if it's a single item, do Y.'",
+ quick:{scenario:"A file explorer needs to compute the total size of a folder, where a folder can contain files and other folders nested arbitrarily deep.",
+   choices:["Composite \u2014 files and folders share a common 'get size' interface","Iterator \u2014 traverse the file list without exposing structure","Flyweight \u2014 share memory between many similar files","Bridge \u2014 separate file type from storage location"],
+   correct:0, explain:"This is a part-whole tree (folders containing files and folders) where the client wants to treat both uniformly \u2014 the textbook case for Composite."}},
+
+{id:"decorator", name:"Decorator", cat:"structural",
+ shortProblem:"Need optional, combinable behaviors.",
+ shortIdea:"Wrap an object to add behavior, instead of subclassing.",
+ problem:"Notifications can go out by Email, SMS, or Social Media \u2014 and customers may want any combination, like Email+SMS or Email+SMS+Social.",
+ cause:"Creating a subclass for every combination doesn't scale.",
+ effect:"The number of subclasses grows combinatorially, and adding one more channel multiplies the problem further.",
+ idea:"Wrap the base notifier with decorator objects, one per extra channel, each adding its own behavior before or after calling the wrapped object.",
+ why:"Behaviors combine by wrapping, so any combination is possible without a dedicated subclass for each one.",
+ badCode:"class EmailNotifier : Notifier {}\nclass EmailSmsNotifier : Notifier {}\nclass EmailSmsSocialNotifier : Notifier {}\n// every combination needs its own class",
+ goodCode:"interface Notifier { void Send(string msg); }\nclass BaseNotifier : Notifier { public void Send(string msg) => Email(msg); }\n\nclass SmsDecorator : Notifier {\n    private Notifier _wrapped;\n    public SmsDecorator(Notifier n) { _wrapped = n; }\n    public void Send(string msg) { _wrapped.Send(msg); Sms(msg); }\n}\n\nNotifier n = new SmsDecorator(new SocialDecorator(new BaseNotifier()));\nn.Send(\"Order shipped!\");",
+ helps:["Add behavior by wrapping, at runtime, instead of a subclass per combination","Behaviors can be combined in any order"],
+ introduces:["Many small wrapper objects can make debugging / stack traces harder to follow"],
+ recognize:"Think Decorator when you need optional behaviors that can be mixed and matched, and subclassing every combination is exploding.",
+ quick:{scenario:"A coffee shop app needs to price a coffee with any combination of extras \u2014 milk, syrup, extra shot \u2014 and a subclass for every combination is unworkable.",
+   choices:["Decorator \u2014 wrap the coffee with one decorator per extra","Composite \u2014 treat single and grouped coffees the same way","Strategy \u2014 swap between different pricing algorithms","Facade \u2014 hide a complex pricing subsystem"],
+   correct:0, explain:"Optional, combinable extras added on top of a base object is exactly the Decorator problem \u2014 Composite is for part-whole trees, not add-on combinations."}},
+
+{id:"facade", name:"Facade", cat:"structural",
+ shortProblem:"A subsystem is complex to use directly.",
+ shortIdea:"One simple interface hides subsystem complexity.",
+ problem:"Starting up a video-conversion subsystem means initializing a codec, configuring buffers, opening the output stream, and calling several methods in a very specific order.",
+ cause:"The subsystem has many classes and steps, and the client is forced to understand and orchestrate all of them.",
+ effect:"Client code becomes long, easy to get wrong, and every consumer of the subsystem duplicates the same setup logic.",
+ idea:"Create one Facade class that exposes a simple method (e.g. `ConvertVideo()`) and internally handles all the subsystem's steps.",
+ why:"The client only talks to the Facade \u2014 it no longer needs to know the subsystem exists in detail.",
+ analogy:"Instead of operating every machine in a factory yourself, you talk to one control panel.",
+ badCode:"var codec = new Codec(); codec.Init();\nvar buffer = new BufferManager(); buffer.Allocate();\nvar stream = new OutputStream(); stream.Open();\ncodec.Configure(buffer);\nstream.Write(codec.Encode(video));\nstream.Close();",
+ goodCode:"public class VideoConverterFacade {\n    public void Convert(Video video) {\n        var codec = new Codec(); codec.Init();\n        var buffer = new BufferManager(); buffer.Allocate();\n        var stream = new OutputStream(); stream.Open();\n        codec.Configure(buffer);\n        stream.Write(codec.Encode(video));\n        stream.Close();\n    }\n}\n\nnew VideoConverterFacade().Convert(myVideo);",
+ helps:["Hides subsystem complexity behind one simple interface","Reduces duplicated setup logic across callers"],
+ introduces:["Can become a 'god object' if it does too much itself instead of delegating","Advanced users needing fine control may still need the subsystem directly"],
+ recognize:"Think Facade when client code has to coordinate many subsystem classes in a specific order just to do one common task.",
+ quick:{scenario:"Placing an order requires checking inventory, charging a card, updating the database, and sending a confirmation email \u2014 in the right order, every time.",
+   choices:["Facade \u2014 one method hides the whole multi-step process","Adapter \u2014 translate between two incompatible interfaces","Proxy \u2014 control access to a single heavy object","Iterator \u2014 traverse a collection of orders"],
+   correct:0, explain:"Coordinating several subsystem steps behind one simple call is exactly Facade's job \u2014 there's no interface mismatch or single heavy object being guarded here."}},
+
+{id:"flyweight", name:"Flyweight", cat:"structural",
+ shortProblem:"Too many similar objects waste memory.",
+ shortIdea:"Share common data across many objects.",
+ problem:"A game spawns thousands of particles, and each one stores its own copy of color and sprite data, consuming huge amounts of memory.",
+ cause:"Every particle object stores both data that's identical across many particles (color, sprite) and data unique to it (position, speed).",
+ effect:"Memory use balloons because identical data is duplicated thousands of times over.",
+ idea:"Split state into shared (intrinsic) state \u2014 like color and sprite \u2014 stored once in a shared Flyweight object, and unique (extrinsic) state \u2014 like position \u2014 kept separately per particle.",
+ why:"Thousands of particles can now share one small set of Flyweight objects instead of each holding a full duplicate copy.",
+ note:"Flyweight is primarily a memory optimization. Confirm there's an actual RAM-consumption problem before reaching for it \u2014 it adds complexity that isn't worth paying for otherwise.",
+ badCode:"class Particle {\n    public Color Color; public Sprite Sprite; // duplicated per particle\n    public float X, Y, Speed;\n}\n// 10,000 particles = 10,000 copies of Color + Sprite",
+ goodCode:"class ParticleType { // Flyweight: shared state\n    public Color Color; public Sprite Sprite;\n}\nclass Particle { // unique state only\n    public ParticleType Type; // shared reference\n    public float X, Y, Speed;\n}\n// 10,000 particles share a handful of ParticleType objects",
+ helps:["Sharply reduces memory use when many objects share the same data"],
+ introduces:["Extra complexity separating shared vs. unique state","Not worth it unless memory use is a confirmed real problem"],
+ recognize:"Think Flyweight only when you have many similar objects AND you've confirmed memory usage is actually a problem \u2014 not just because there are 'a lot' of objects.",
+ quick:{scenario:"A text editor renders a document with a million characters, and storing full font/style data per character is using too much RAM.",
+   choices:["Flyweight \u2014 share font/style data across characters with the same formatting","Builder \u2014 construct the document step by step","Singleton \u2014 one shared document instance","Bridge \u2014 separate character type from rendering"],
+   correct:0, explain:"Many nearly-identical objects sharing common data to save memory is precisely what Flyweight addresses."}},
+
+{id:"proxy", name:"Proxy", cat:"structural",
+ shortProblem:"A heavy object shouldn't be used directly.",
+ shortIdea:"A stand-in controls access / delays creation.",
+ problem:"A HighResImage is expensive to load, but it's only needed if the user actually scrolls to it.",
+ cause:"Without something standing in for the real object, every client has to write its own 'only load this when needed' logic.",
+ effect:"Loading logic gets duplicated everywhere the image is used, or the app just loads everything eagerly and wastes resources.",
+ idea:"Create a Proxy with the same interface as the real object. The Proxy delays creating the real object until it's actually needed, and can also control access or add logic before/after forwarding the request.",
+ why:"The client uses the Proxy exactly like the real object, so the delay/control logic lives in one place instead of being duplicated by every caller.",
+ badCode:"var image = new HighResImage(\"photo.jpg\"); // loads immediately, even if never shown\nimage.Display();",
+ goodCode:"interface IImage { void Display(); }\nclass HighResImage : IImage {\n    public HighResImage(string path) { /* expensive load */ }\n    public void Display() {...}\n}\nclass ImageProxy : IImage {\n    private HighResImage _real; private string _path;\n    public ImageProxy(string path) { _path = path; }\n    public void Display() {\n        _real ??= new HighResImage(_path); // load only when needed\n        _real.Display();\n    }\n}",
+ helps:["Delays expensive work until it's actually needed","Can add access control or logging without changing the real object"],
+ introduces:["An extra layer between client and real object","A small amount of indirection overhead"],
+ recognize:"Think Proxy when a client shouldn't (or doesn't need to) talk to a resource-heavy object directly every time.",
+ quick:{scenario:"A document viewer shows a placeholder for each embedded image and only loads the actual image file when the user scrolls it into view.",
+   choices:["Proxy \u2014 stands in for the real image and loads it on demand","Facade \u2014 hides a complex multi-step subsystem","Decorator \u2014 adds extra behavior to an existing object","Observer \u2014 notifies subscribers of changes"],
+   correct:0, explain:"Standing in for a heavy object and controlling when it's actually created is exactly Proxy's role \u2014 it's not simplifying a subsystem or adding stacked behaviors."}},
+
+{id:"iterator", name:"Iterator", cat:"behavioral",
+ shortProblem:"Traverse a collection without exposing its structure.",
+ shortIdea:"An iterator handles traversal internally.",
+ problem:"Code needs to go through a collection of items, but that collection might internally be a list, a stack, or a tree.",
+ cause:"If client code accesses the internal structure directly, it becomes dependent on exactly how that collection is implemented.",
+ effect:"Changing the collection's internal structure later breaks every place that traverses it directly.",
+ idea:"Provide an Iterator object with a simple `Next()` / `HasNext()` interface that handles traversal internally, whatever the underlying structure is.",
+ why:"Client code only talks to the Iterator, so it never needs to know or care how the collection stores its items.",
+ badCode:"for (int i = 0; i < list.Count; i++) { // assumes list is index-based\n    Process(list[i]);\n}\n// breaks if the collection becomes a tree or linked list",
+ goodCode:"interface IIterator<T> { bool HasNext(); T Next(); }\nclass ListIterator<T> : IIterator<T> { /* knows how to walk a list */ }\n\nvar it = collection.CreateIterator();\nwhile (it.HasNext()) { Process(it.Next()); }\n// works the same whether collection is a list, tree, etc.",
+ helps:["Client code doesn't need to know the collection's internal structure","The same traversal interface works across different collection types"],
+ introduces:["An extra object (the iterator) for simple cases that may not need it"],
+ recognize:"Think Iterator when client code is traversing a collection and shouldn't need to know or depend on how it's stored internally.",
+ quick:{scenario:"A social media feed can be backed by a list, a database cursor, or a paginated API \u2014 but the UI code that displays posts shouldn't need to change based on which one.",
+   choices:["Iterator \u2014 traverse the feed without knowing its storage","Observer \u2014 notify subscribers when the feed changes","Composite \u2014 treat single posts and groups the same way","Strategy \u2014 swap between different feed-ranking algorithms"],
+   correct:0, explain:"The problem is purely about traversing a collection without depending on its internal representation \u2014 Iterator's exact purpose."}},
+
+{id:"observer", name:"Observer", cat:"behavioral",
+ shortProblem:"Several objects must react to a change.",
+ shortIdea:"Subscribers register; the publisher notifies them.",
+ problem:"Customers want to know when a product is back in stock, but not every customer cares about every product.",
+ cause:"If the Store just pushes every update to every customer, most of it is irrelevant noise; if customers must check manually, updates arrive late or not at all.",
+ effect:"Either customers are flooded with updates they don't care about, or they miss the ones they do care about.",
+ idea:"Use a subscription mechanism: customers subscribe to the specific products they care about, and the Store notifies only its subscribers when something changes.",
+ why:"Customers get exactly the updates they asked for, and the Store doesn't need to know who's listening or why \u2014 it just notifies its subscriber list.",
+ badCode:"foreach (var customer in allCustomers) {\n    customer.Notify(product); // everyone gets every update\n}",
+ goodCode:"interface ISubscriber { void Update(Product p); }\nclass Store {\n    private List<ISubscriber> _subscribers = new();\n    public void Subscribe(ISubscriber s) => _subscribers.Add(s);\n    public void Unsubscribe(ISubscriber s) => _subscribers.Remove(s);\n    public void NotifyAll(Product p) {\n        foreach (var s in _subscribers) s.Update(p);\n    }\n}",
+ helps:["Only interested parties are notified","Publisher and subscribers stay loosely coupled"],
+ introduces:["If not managed carefully, forgotten subscriptions can cause memory leaks or unexpected notifications"],
+ recognize:"Think Observer when several objects need to react to a change in another object, and that set of interested objects can change at runtime.",
+ quick:{scenario:"A weather station updates temperature and humidity, and several display panels all need to update automatically whenever new data arrives.",
+   choices:["Observer \u2014 displays subscribe to the station and get notified of updates","Strategy \u2014 swap between different measurement algorithms","Iterator \u2014 traverse a list of weather readings","Bridge \u2014 separate the station from the display type"],
+   correct:0, explain:"Multiple objects needing to react automatically whenever another object changes is precisely the Observer pattern's problem."}},
+
+{id:"strategy", name:"Strategy", cat:"behavioral",
+ shortProblem:"A class contains too many interchangeable algorithms.",
+ shortIdea:"Extract each algorithm into its own class; delegate to it.",
+ problem:"A Navigator class contains a road-routing algorithm, a walking algorithm, and a public-transit algorithm all inside one class \u2014 and more are coming.",
+ cause:"Each new routing algorithm is added directly into the Navigator class, usually as another branch of a big if/else.",
+ effect:"The Navigator class keeps growing, becomes harder to test, and unrelated algorithms are tangled together inside one class.",
+ idea:"Extract each algorithm into its own Strategy class implementing a common interface, and have Navigator delegate to whichever Strategy is currently selected.",
+ why:"Navigator no longer needs to contain every algorithm itself \u2014 it just calls whichever Strategy object it's holding, and switching algorithms means swapping that object.",
+ badCode:"class Navigator {\n    public Route Calculate(string mode) {\n        if (mode == \"road\") { /* road algorithm inline */ }\n        else if (mode == \"walk\") { /* walking algorithm inline */ }\n        else if (mode == \"transit\") { /* transit algorithm inline */ }\n        // every new mode = another branch, growing forever\n    }\n}",
+ goodCode:"interface IRouteStrategy { Route Calculate(); }\nclass RoadStrategy : IRouteStrategy { public Route Calculate() {...} }\nclass WalkingStrategy : IRouteStrategy { public Route Calculate() {...} }\n\nclass Navigator {\n    private IRouteStrategy _strategy;\n    public Navigator(IRouteStrategy s) { _strategy = s; }\n    public Route Calculate() => _strategy.Calculate();\n}\n// Swap algorithms by swapping the strategy object",
+ helps:["Navigator stays small \u2014 it delegates instead of containing every algorithm","New algorithms are added as new classes, without touching Navigator"],
+ introduces:["The client must know which strategy to pick and select it explicitly","More classes overall than one big class with branches"],
+ recognize:"Think Strategy when a class contains several interchangeable algorithms selected by a condition, and that condition list keeps growing.",
+ quick:{scenario:"A checkout system supports paying by credit card, e-wallet, or bank transfer, and the Checkout class is accumulating a big if/else for each method.",
+   choices:["Strategy \u2014 extract each payment method into its own interchangeable class","Observer \u2014 notify subscribers when payment completes","Decorator \u2014 wrap the payment with extra behavior","Facade \u2014 simplify a complex payment subsystem"],
+   correct:0, explain:"Interchangeable algorithms (payment methods) selected by a condition, growing inside one class, is exactly Strategy's problem."}}
+];
+
+var SCENARIOS = [
+ {q:"XML system needs to communicate with a JSON-only service.", id:"adapter"},
+ {q:"Need different routing algorithms without growing Navigator.", id:"strategy"},
+ {q:"Need one shared instance of a resource.", id:"singleton"},
+ {q:"Need to create a matching chair, sofa, and table family.", id:"abstract-factory"},
+ {q:"Need to add optional behavior by stacking wrappers.", id:"decorator"},
+ {q:"Need to treat a box and a product through the same interface.", id:"composite"},
+ {q:"Need to simplify access to a complicated subsystem.", id:"facade"},
+ {q:"Need to build a complex object step-by-step.", id:"builder"},
+ {q:"Need to notify subscribed objects when something changes.", id:"observer"},
+ {q:"Need to share common data among many similar objects to reduce memory usage.", id:"flyweight"},
+ {q:"Need a substitute that controls access to another object.", id:"proxy"},
+ {q:"Need to copy an existing configured object.", id:"prototype"},
+ {q:"Need to separate shape and color so both can change independently.", id:"bridge"},
+ {q:"Need object creation to vary without tightly coupling client code to concrete products.", id:"factory-method"},
+ {q:"Need to traverse a collection without exposing its internal structure.", id:"iterator"}
+];
+
+var DECISION_TREE = {
+  root: {q:"What problem are you seeing?", opts:[
+    {label:"Object creation is difficult.", next:"creational"},
+    {label:"Classes don't fit together.", next:"structural"},
+    {label:"Objects need better communication or behavior.", next:"behavioral"}
+  ]},
+  creational: {q:"More specifically \u2014 what's the creation problem?", opts:[
+    {label:"Need exactly one instance?", pattern:"singleton"},
+    {label:"Object type varies by condition?", pattern:"factory-method"},
+    {label:"Need to copy an existing object?", pattern:"prototype"},
+    {label:"Need a matching family of products?", pattern:"abstract-factory"},
+    {label:"Construction has many steps?", pattern:"builder"}
+  ]},
+  structural: {q:"More specifically \u2014 what's the fit problem?", opts:[
+    {label:"Interfaces don't match?", pattern:"adapter"},
+    {label:"Two things vary independently?", pattern:"bridge"},
+    {label:"Need to treat groups and single items alike?", pattern:"composite"},
+    {label:"Need to add behavior by wrapping?", pattern:"decorator"},
+    {label:"Need to simplify a complex subsystem?", pattern:"facade"},
+    {label:"Too many similar objects use too much memory?", pattern:"flyweight"},
+    {label:"A heavy object needs a stand-in?", pattern:"proxy"}
+  ]},
+  behavioral: {q:"More specifically \u2014 what's the behavior problem?", opts:[
+    {label:"Need to traverse a collection safely?", pattern:"iterator"},
+    {label:"Objects need to react to a change?", pattern:"observer"},
+    {label:"Need different interchangeable algorithms?", pattern:"strategy"}
+  ]}
+};
+
+var QUIZ = [
+ {q:"A ride-hailing app calculates fares using surge pricing, flat-rate, or distance-based pricing, and the Fare class keeps growing with each new pricing scheme.",
+  choices:["Strategy \u2014 extract each pricing scheme into its own class","Singleton \u2014 one shared fare calculator","Adapter \u2014 translate between fare formats","Composite \u2014 treat fares and fare groups alike"], correct:0,
+  explain:"Interchangeable algorithms (pricing schemes) growing inside one class is Strategy's signature problem."},
+ {q:"An app needs a single shared connection pool manager so that every part of the app reuses the same pool instead of opening new ones.",
+  choices:["Singleton \u2014 guarantee one shared instance","Builder \u2014 construct the pool step by step","Observer \u2014 notify subscribers about pool status","Bridge \u2014 separate pool type from connection type"], correct:0,
+  explain:"The requirement is exactly one shared instance with a single access point \u2014 Singleton's core purpose."},
+ {q:"A legacy inventory system returns data as CSV, but the new reporting dashboard only reads JSON, and neither system can be rewritten.",
+  choices:["Adapter \u2014 translate CSV into JSON between the two","Facade \u2014 simplify a complex subsystem","Proxy \u2014 delay loading the inventory data","Decorator \u2014 add formatting on top of the data"], correct:0,
+  explain:"Two existing systems with mismatched formats that can't change is the Adapter problem \u2014 translate between them without modifying either."},
+ {q:"A drawing app needs to duplicate a fully customized brush (color, width, texture, opacity) that the user has already configured.",
+  choices:["Prototype \u2014 clone the configured brush","Factory Method \u2014 create a brush by a common interface","Flyweight \u2014 share brush data across many brushes","Iterator \u2014 traverse the list of brushes"], correct:0,
+  explain:"Copying an already-configured object is exactly what Prototype's Clone() solves, rather than building one from scratch."},
+ {q:"An e-commerce site needs Product, ProductBundle, and ProductBundle-of-bundles all priced the same way, no matter how deeply bundles are nested.",
+  choices:["Composite \u2014 products and bundles share a common pricing interface","Bridge \u2014 separate product type from bundle type","Builder \u2014 assemble bundles step by step","Strategy \u2014 swap between pricing algorithms"], correct:0,
+  explain:"A tree of part-whole relationships (bundles containing products and other bundles) that must be treated uniformly is Composite's exact use case."},
+ {q:"A photo app needs to add filters to an image \u2014 sepia, blur, sharpen \u2014 in any combination the user picks, without a subclass for every filter combo.",
+  choices:["Decorator \u2014 wrap the image with one decorator per filter","Composite \u2014 treat single and grouped images alike","Abstract Factory \u2014 create a matching family of filtered images","Facade \u2014 hide a complex filtering subsystem"], correct:0,
+  explain:"Optional, stackable behaviors (filters) that can combine in any order point directly to Decorator."},
+ {q:"A reporting library must produce matching chart, legend, and axis objects for either a 'Light theme' or a 'Dark theme' \u2014 never a mix of the two.",
+  choices:["Abstract Factory \u2014 one factory produces a whole matching theme family","Factory Method \u2014 create one product type","Prototype \u2014 clone an existing chart","Bridge \u2014 separate chart type from theme"], correct:0,
+  explain:"Several related products (chart, legend, axis) that must match as a family is the specific problem Abstract Factory solves."},
+ {q:"A video game needs to load a large 3D character model only the first time it actually appears on screen, not when the level starts.",
+  choices:["Proxy \u2014 a stand-in delays loading the real model until needed","Flyweight \u2014 share model data across many characters","Facade \u2014 simplify the model-loading subsystem","Observer \u2014 notify listeners when the model loads"], correct:0,
+  explain:"Delaying the creation of a resource-heavy object until it's actually needed is Proxy's role."},
+ {q:"A spreadsheet app needs to sum values across cells, but cells can be stored in a flat array, a sparse map, or a tree \u2014 and the summing code shouldn't care which.",
+  choices:["Iterator \u2014 traverse cells without depending on their storage","Strategy \u2014 swap between summing algorithms","Composite \u2014 treat individual cells and cell ranges alike","Adapter \u2014 translate between storage formats"], correct:0,
+  explain:"Traversing a collection without depending on how it's stored internally is exactly Iterator's purpose, even though summing looks like 'an algorithm' at first glance."},
+ {q:"A stock-trading app needs to alert multiple independent modules (portfolio tracker, alert system, chart) whenever a stock price changes, and which modules are listening can change while the app runs.",
+  choices:["Observer \u2014 modules subscribe and get notified on change","Strategy \u2014 swap between price-calculation algorithms","Builder \u2014 construct the price update step by step","Singleton \u2014 one shared price tracker instance"], correct:0,
+  explain:"Multiple, changeable listeners that must react automatically to a change in another object is Observer's defining problem."}
+];
+
+/* ============================= STATE ============================= */
+
+var state = {
+  category: null,
+  search: "",
+  currentPattern: null,
+  visited: {},
+  showGood: {}
+};
+
+function byId(id){ for (var i=0;i<PATTERNS.length;i++){ if (PATTERNS[i].id===id) return PATTERNS[i]; } return null; }
+function esc(s){ return String(s).replace(/[&<>]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]; }); }
+
+/* ============================= HOW TO READ FLOW ============================= */
+
+function renderFlow(){
+  var container = document.getElementById("flowSteps");
+  if (!container) return;
+  container.innerHTML = "";
+  READ_FLOW.forEach(function(step, idx){
+    var btn = document.createElement("button");
+    btn.className = "flow-step";
+    btn.type = "button";
+    btn.innerHTML = '<div class="n">STEP ' + step.n + '</div><div class="t">' + esc(step.t) + '</div>';
+    btn.addEventListener("click", function(){
+      var all = container.querySelectorAll(".flow-step");
+      for (var i=0;i<all.length;i++){ all[i].classList.remove("active"); }
+      btn.classList.add("active");
+      var detail = document.getElementById("flowDetail");
+      if (detail) detail.innerHTML = step.text;
+    });
+    container.appendChild(btn);
+    if (idx < READ_FLOW.length - 1){
+      var arrow = document.createElement("div");
+      arrow.className = "flow-arrow";
+      arrow.textContent = "\u2192";
+      container.appendChild(arrow);
+    }
+  });
+}
+
+/* ============================= CATEGORY CARDS ============================= */
+
+function renderCategories(){
+  var grid = document.getElementById("catGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  Object.keys(CATS).forEach(function(catKey){
+    var cat = CATS[catKey];
+    var count = PATTERNS.filter(function(p){ return p.cat === catKey; }).length;
+    var card = document.createElement("button");
+    card.type = "button";
+    card.className = "cat-card tick";
+    card.setAttribute("data-cat", catKey);
+    card.innerHTML = '<div class="bar"></div><h3>' + esc(cat.label) + '</h3><p>' + esc(cat.tag) + '</p><div class="count">' + count + ' patterns</div>';
+    card.addEventListener("click", function(){
+      state.category = catKey;
+      var searchBox = document.getElementById("searchBox");
+      if (searchBox) searchBox.value = "";
+      state.search = "";
+      renderCategorySelection();
+      renderPatternNav();
+      var explore = document.getElementById("explore");
+      if (explore) explore.scrollIntoView({behavior:"smooth", block:"start"});
+    });
+    grid.appendChild(card);
+  });
+}
+
+function renderCategorySelection(){
+  var grid = document.getElementById("catGrid");
+  if (!grid) return;
+  var cards = grid.querySelectorAll(".cat-card");
+  for (var i=0;i<cards.length;i++){
+    if (cards[i].getAttribute("data-cat") === state.category){ cards[i].classList.add("selected"); }
+    else { cards[i].classList.remove("selected"); }
+  }
+}
+
+/* ============================= SIDEBAR / NAV ============================= */
+
+function updateProgress(){
+  var n = Object.keys(state.visited).length;
+  var line = document.getElementById("progressLine");
+  var bar = document.getElementById("progressBar");
+  if (line) line.textContent = n + " of " + PATTERNS.length + " patterns explored";
+  if (bar) bar.style.width = Math.round((n / PATTERNS.length) * 100) + "%";
+}
+
+function renderPatternNav(){
+  var nav = document.getElementById("patternNav");
+  if (!nav) return;
+  nav.innerHTML = "";
+  var list = PATTERNS.filter(function(p){
+    var matchCat = !state.category || p.cat === state.category;
+    var matchSearch = !state.search || p.name.toLowerCase().indexOf(state.search.toLowerCase()) !== -1;
+    return matchCat && matchSearch;
+  });
+  if (list.length === 0){
+    var li = document.createElement("li");
+    li.style.cssText = "padding:8px 9px; color:var(--ink-soft); font-size:.85rem;";
+    li.textContent = "No patterns match.";
+    nav.appendChild(li);
+    return;
+  }
+  list.forEach(function(p){
+    var li = document.createElement("li");
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = (state.visited[p.id] ? "visited " : "") + (state.currentPattern === p.id ? "active" : "");
+    btn.innerHTML = '<span>' + esc(p.name) + '</span><span class="dot"></span>';
+    btn.addEventListener("click", function(){ selectPattern(p.id); });
+    li.appendChild(btn);
+    nav.appendChild(li);
+  });
+}
+
+/* ============================= PATTERN DETAIL ============================= */
+
+function selectPattern(id){
+  state.currentPattern = id;
+  state.visited[id] = true;
+  if (!(id in state.showGood)) state.showGood[id] = false;
+  updateProgress();
+  renderPatternNav();
+  renderDetail();
+  var detailEl = document.getElementById("detail");
+  if (detailEl) detailEl.scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function renderDetail(){
+  var el = document.getElementById("detail");
+  if (!el) return;
+  var p = byId(state.currentPattern);
+  if (!p){
+    el.innerHTML = '<p class="empty">Pick a pattern from the list to begin.</p>';
+    return;
+  }
+  var showGood = !!state.showGood[p.id];
+  var codeText = showGood ? p.goodCode : p.badCode;
+  var codeLabel = showGood ? "Pattern-based design" : "Problematic design";
+
+  var noteHtml = p.note ? '<div class="recognize"><b>Note:</b> ' + esc(p.note) + '</div>' : "";
+  var analogyHtml = p.analogy ? '<p class="chain-row"><span class="lbl">ANALOGY</span><span class="txt" style="font-style:italic;">' + esc(p.analogy) + '</span></p>' : "";
+
+  el.innerHTML =
+    '<div class="detail-head">' +
+      '<h3>' + esc(p.name) + '</h3>' +
+      '<span class="badge ' + p.cat + '">' + esc(CATS[p.cat].label) + '</span>' +
+    '</div>' +
+    '<div class="chain">' +
+      '<div class="chain-row"><span class="lbl">PROBLEM</span><span class="txt">' + esc(p.problem) + '</span></div>' +
+      '<div class="chain-row"><span class="lbl">CAUSE</span><span class="txt">' + esc(p.cause) + '</span></div>' +
+      '<div class="chain-row"><span class="lbl">IF UNCHANGED</span><span class="txt">' + esc(p.effect) + '</span></div>' +
+    '</div>' +
+    '<div class="idea-box"><div class="lbl">THE PATTERN\u2019S IDEA</div><p>' + esc(p.idea) + '</p></div>' +
+    '<div class="chain-row" style="margin-bottom:6px;"><span class="lbl">WHY IT HELPS</span><span class="txt">' + esc(p.why) + '</span></div>' +
+    analogyHtml +
+    '<div class="toggle-row">' +
+      '<button type="button" class="toggle-btn bad ' + (!showGood ? "active bad" : "") + '" data-mode="bad">Bad / problematic design</button>' +
+      '<button type="button" class="toggle-btn good ' + (showGood ? "active good" : "") + '" data-mode="good">Pattern-based design</button>' +
+    '</div>' +
+    '<div class="code-panel">' +
+      '<div style="font-size:.78rem; color:var(--ink-soft); margin-bottom:4px; font-family:var(--mono);">' + codeLabel + '</div>' +
+      '<pre><code id="codeBlock"></code></pre>' +
+      '<button type="button" class="copy-btn" id="copyBtn">Copy</button>' +
+    '</div>' +
+    noteHtml +
+    '<details class="consequences"><summary>Consequences / trade-offs</summary>' +
+      '<div class="cons-body"><div class="cons-cols">' +
+        '<div class="helps"><h4>HELPS WITH</h4><ul>' + p.helps.map(function(h){ return '<li>' + esc(h) + '</li>'; }).join("") + '</ul></div>' +
+        '<div class="costs"><h4>BUT INTRODUCES</h4><ul>' + p.introduces.map(function(h){ return '<li>' + esc(h) + '</li>'; }).join("") + '</ul></div>' +
+      '</div></div>' +
+    '</details>' +
+    '<div class="recognize"><b>When would I recognize this?</b> ' + esc(p.recognize) + '</div>' +
+    '<div class="quick-check" id="quickCheck"></div>';
+
+  var codeBlock = document.getElementById("codeBlock");
+  if (codeBlock) codeBlock.textContent = codeText;
+
+  var copyBtn = document.getElementById("copyBtn");
+  if (copyBtn){
+    copyBtn.addEventListener("click", function(){
+      var text = codeBlock ? codeBlock.textContent : "";
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(function(){
+          copyBtn.textContent = "Copied!";
+          setTimeout(function(){ copyBtn.textContent = "Copy"; }, 1400);
+        }).catch(function(){ fallbackCopy(text, copyBtn); });
+      } else {
+        fallbackCopy(text, copyBtn);
+      }
+    });
+  }
+
+  var toggleBtns = el.querySelectorAll(".toggle-btn");
+  for (var i=0;i<toggleBtns.length;i++){
+    toggleBtns[i].addEventListener("click", function(e){
+      var mode = e.currentTarget.getAttribute("data-mode");
+      state.showGood[p.id] = (mode === "good");
+      renderDetail();
+    });
+  }
+
+  renderQuickCheck(p);
+}
+
+function fallbackCopy(text, btn){
+  var ta = document.createElement("textarea");
+  ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); btn.textContent = "Copied!"; setTimeout(function(){ btn.textContent = "Copy"; }, 1400); }
+  catch(e){ /* ignore */ }
+  document.body.removeChild(ta);
+}
+
+function renderQuickCheck(p){
+  var box = document.getElementById("quickCheck");
+  if (!box || !p.quick) return;
+  var q = p.quick;
+  box.innerHTML =
+    '<h4>Quick check</h4>' +
+    '<div class="qc-scenario">' + esc(q.scenario) + '</div>' +
+    '<div class="qc-choices" id="qcChoices"></div>' +
+    '<div class="qc-feedback" id="qcFeedback"></div>';
+  var choicesEl = document.getElementById("qcChoices");
+  q.choices.forEach(function(choiceText, idx){
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "qc-choice";
+    btn.textContent = choiceText;
+    btn.addEventListener("click", function(){
+      var all = choicesEl.querySelectorAll(".qc-choice");
+      for (var i=0;i<all.length;i++){ all[i].setAttribute("disabled","true"); }
+      var fb = document.getElementById("qcFeedback");
+      if (idx === q.correct){
+        btn.classList.add("correct");
+        if (fb){ fb.className = "qc-feedback show correct-fb"; fb.innerHTML = "<b>That's the fit.</b> " + esc(q.explain); }
+      } else {
+        btn.classList.add("wrong");
+        all[q.correct].classList.add("correct");
+        if (fb){ fb.className = "qc-feedback show wrong-fb"; fb.innerHTML = "<b>Not quite.</b> " + esc(q.explain); }
+      }
+    });
+    choicesEl.appendChild(btn);
+  });
+}
+
+/* ============================= SCENARIO MATCHER ============================= */
+
+function renderScenarios(){
+  var grid = document.getElementById("scenarioGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  SCENARIOS.forEach(function(s){
+    var pattern = byId(s.id);
+    if (!pattern) return;
+    var card = document.createElement("div");
+    card.className = "scenario-card";
+    card.innerHTML =
+      '<div class="q">\u201c' + esc(s.q) + '\u201d</div>' +
+      '<button type="button" class="reveal-btn">Reveal pattern</button>' +
+      '<div class="answer"><a href="#explore" data-goto="' + pattern.id + '">' + esc(pattern.name) + '</a> &middot; ' + esc(CATS[pattern.cat].label) + '</div>';
+    var revealBtn = card.querySelector(".reveal-btn");
+    var answer = card.querySelector(".answer");
+    revealBtn.addEventListener("click", function(){ answer.classList.add("show"); revealBtn.style.display = "none"; });
+    var link = card.querySelector("a[data-goto]");
+    link.addEventListener("click", function(e){
+      e.preventDefault();
+      var id = e.currentTarget.getAttribute("data-goto");
+      selectPattern(id);
+    });
+    grid.appendChild(card);
+  });
+}
+
+/* ============================= COMPARISON TABLE ============================= */
+
+function renderTable(){
+  var body = document.getElementById("compareBody");
+  if (!body) return;
+  body.innerHTML = "";
+  PATTERNS.forEach(function(p){
+    var tr = document.createElement("tr");
+    tr.className = "rowbtn";
+    tr.tabIndex = 0;
+    tr.innerHTML =
+      '<td><strong>' + esc(p.name) + '</strong></td>' +
+      '<td class="catcell">' + esc(CATS[p.cat].label) + '</td>' +
+      '<td>' + esc(p.shortProblem) + '</td>' +
+      '<td>' + esc(p.shortIdea) + '</td>';
+    tr.addEventListener("click", function(id){ return function(){ selectPattern(id); }; }(p.id));
+    tr.addEventListener("keypress", function(id){ return function(e){ if (e.key === "Enter") selectPattern(id); }; }(p.id));
+    body.appendChild(tr);
+  });
+}
+
+/* ============================= DECISION HELPER ============================= */
+
+function renderDecision(nodeKey, trail){
+  var box = document.getElementById("decisionBox");
+  if (!box) return;
+  var node = DECISION_TREE[nodeKey];
+  if (!node){ return; }
+  var trailHtml = trail.length ? '<div class="decision-trail">' + trail.map(esc).join(" \u2192 ") + '</div>' : "";
+  box.innerHTML =
+    trailHtml +
+    '<p class="q">' + esc(node.q) + '</p>' +
+    '<div class="decision-opts" id="decisionOpts"></div>' +
+    '<div class="decision-result" id="decisionResult"></div>' +
+    (trail.length ? '<div style="margin-top:14px;"><button type="button" id="decisionRestart" class="toggle-btn">Start over</button></div>' : "");
+
+  var optsEl = document.getElementById("decisionOpts");
+  node.opts.forEach(function(opt){
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = opt.label;
+    btn.addEventListener("click", function(){
+      if (opt.next){
+        renderDecision(opt.next, trail.concat([opt.label]));
+      } else if (opt.pattern){
+        var pattern = byId(opt.pattern);
+        var result = document.getElementById("decisionResult");
+        if (result && pattern){
+          result.className = "decision-result show";
+          result.innerHTML = 'That points to <a href="#explore" id="decisionLink"><strong>' + esc(pattern.name) + '</strong></a> \u2014 ' + esc(pattern.shortProblem);
+          var link = document.getElementById("decisionLink");
+          link.addEventListener("click", function(e){ e.preventDefault(); selectPattern(pattern.id); });
+        }
+      }
+    });
+    optsEl.appendChild(btn);
+  });
+
+  var restart = document.getElementById("decisionRestart");
+  if (restart) restart.addEventListener("click", function(){ renderDecision("root", []); });
+}
+
+/* ============================= CHEAT SHEET ============================= */
+
+function renderCheatSheet(){
+  var grid = document.getElementById("cheatGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  var catDescs = {creational:"Create objects", structural:"Connect objects", behavioral:"Manage behavior / communication"};
+  Object.keys(CATS).forEach(function(catKey){
+    var col = document.createElement("div");
+    col.className = "cheat-col";
+    col.setAttribute("data-cat", catKey);
+    var itemsHtml = PATTERNS.filter(function(p){ return p.cat === catKey; }).map(function(p){
+      return '<div class="cheat-item" data-id="' + p.id + '"><b>' + esc(p.name) + '</b><span>' + esc(p.shortProblem) + '</span></div>';
+    }).join("");
+    col.innerHTML = '<h3>' + esc(CATS[catKey].label) + '</h3><p class="desc">' + esc(catDescs[catKey]) + '</p>' + itemsHtml;
+    grid.appendChild(col);
+  });
+  var items = grid.querySelectorAll(".cheat-item");
+  for (var i=0;i<items.length;i++){
+    items[i].addEventListener("click", function(e){
+      var id = e.currentTarget.getAttribute("data-id");
+      selectPattern(id);
+    });
+  }
+}
+
+/* ============================= FINAL QUIZ ============================= */
+
+var quizState = { index:0, score:0, answered:false };
+
+function renderQuiz(){
+  var box = document.getElementById("quizBox");
+  if (!box) return;
+  if (quizState.index >= QUIZ.length){
+    box.innerHTML =
+      '<div class="quiz-score">' +
+        '<div class="big">' + quizState.score + ' / ' + QUIZ.length + '</div>' +
+        '<p>patterns correctly recognized</p>' +
+        '<div class="buttons">' +
+          '<button type="button" id="tryAgainBtn">Try Again</button>' +
+          '<button type="button" id="reviewBtn" class="secondary">Review Patterns</button>' +
+        '</div>' +
+      '</div>';
+    var tryAgain = document.getElementById("tryAgainBtn");
+    var review = document.getElementById("reviewBtn");
+    if (tryAgain) tryAgain.addEventListener("click", function(){ quizState = {index:0, score:0, answered:false}; renderQuiz(); });
+    if (review) review.addEventListener("click", function(){
+      var explore = document.getElementById("explore");
+      if (explore) explore.scrollIntoView({behavior:"smooth", block:"start"});
+    });
+    return;
+  }
+  var q = QUIZ[quizState.index];
+  quizState.answered = false;
+  box.innerHTML =
+    '<div class="quiz-progress">Question ' + (quizState.index + 1) + ' of ' + QUIZ.length + ' &middot; Score ' + quizState.score + '</div>' +
+    '<div class="quiz-q">' + esc(q.q) + '</div>' +
+    '<div class="quiz-choices" id="quizChoices"></div>' +
+    '<div class="quiz-feedback" id="quizFeedback"></div>' +
+    '<div class="quiz-nav"><button type="button" id="quizNextBtn" disabled>Next</button></div>';
+
+  var choicesEl = document.getElementById("quizChoices");
+  q.choices.forEach(function(choiceText, idx){
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "quiz-choice";
+    btn.textContent = choiceText;
+    btn.addEventListener("click", function(){
+      if (quizState.answered) return;
+      quizState.answered = true;
+      var all = choicesEl.querySelectorAll(".quiz-choice");
+      for (var i=0;i<all.length;i++){ all[i].setAttribute("disabled","true"); }
+      var fb = document.getElementById("quizFeedback");
+      if (idx === q.correct){
+        quizState.score++;
+        btn.classList.add("correct");
+        if (fb){ fb.className = "quiz-feedback show"; fb.innerHTML = "<b>Correct.</b> " + esc(q.explain); }
+      } else {
+        btn.classList.add("wrong");
+        all[q.correct].classList.add("correct");
+        if (fb){ fb.className = "quiz-feedback show"; fb.innerHTML = "<b>Not quite.</b> " + esc(q.explain); }
+      }
+      var nextBtn = document.getElementById("quizNextBtn");
+      if (nextBtn) nextBtn.removeAttribute("disabled");
+    });
+    choicesEl.appendChild(btn);
+  });
+
+  var nextBtn = document.getElementById("quizNextBtn");
+  if (nextBtn){
+    nextBtn.addEventListener("click", function(){
+      quizState.index++;
+      renderQuiz();
+    });
+  }
+}
+
+/* ============================= SEARCH ============================= */
+
+function bindSearch(){
+  var box = document.getElementById("searchBox");
+  if (!box) return;
+  box.addEventListener("input", function(){
+    state.search = box.value;
+    renderPatternNav();
+  });
+}
+
+/* ============================= INIT ============================= */
+
+function init(){
+  renderFlow();
+  renderCategories();
+  renderCategorySelection();
+  bindSearch();
+  renderPatternNav();
+  updateProgress();
+  renderDetail();
+  renderScenarios();
+  renderTable();
+  renderDecision("root", []);
+  renderCheatSheet();
+  renderQuiz();
+}
+
+if (document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}
+
+})();
+</script>
+</body>
+</html>
