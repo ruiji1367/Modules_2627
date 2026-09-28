@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IT1811 — Life Cycle of a Thread</title>
+<style>
+  :root{
+    --paper:#EDE8DA; --paper-alt:#E3DDCB; --panel:#F5F1E4;
+    --ink:#1E2A35; --ink-soft:#4B5A66;
+    --blue:#2B5C86; --blue-deep:#16324F; --blue-tint:#DCE7EE;
+    --amber:#A85A26; --amber-tint:#F1E0CE;
+    --sage:#3F7157; --sage-tint:#DCE8DE;
+    --line:#16324F40; --line-soft:#16324F22;
+    --mono: ui-monospace, 'Cascadia Code', 'Fira Code', Menlo, Consolas, monospace;
+    --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; font-family:var(--sans); color:var(--ink); background:var(--paper);
+    background-image:
+      linear-gradient(var(--line-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+    background-size:28px 28px;
+    line-height:1.55;
+  }
+  a{color:var(--blue);}
+  button{font-family:inherit;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 20px;}
+  .tick{position:relative;}
+  .tick::before,.tick::after{content:"";position:absolute;width:10px;height:10px;border:1.5px solid var(--blue-deep);opacity:.55;}
+  .tick::before{top:-1px;left:-1px;border-right:none;border-bottom:none;}
+  .tick::after{bottom:-1px;right:-1px;border-left:none;border-top:none;}
+
+  header.masthead{
+    background:var(--blue-deep); color:var(--paper); padding:16px 0 14px;
+    border-bottom:3px solid var(--amber);
+    position:sticky; top:0; z-index:100;
+    box-shadow:0 6px 14px -8px rgba(0,0,0,.45);
+  }
+  header.masthead .wrap{display:flex; flex-wrap:wrap; align-items:flex-end; gap:18px; justify-content:space-between;}
+  .brand{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;}
+  .brand .code{font-family:var(--mono); font-size:.85rem; letter-spacing:.04em; border:1px solid #ffffff55; padding:3px 8px; border-radius:3px;}
+  .brand h1{font-family:var(--serif); font-weight:700; font-size:1.8rem; margin:6px 0 0;}
+  header.masthead p.sub{margin:4px 0 0; color:#D9E3EC; font-size:.95rem; max-width:46ch;}
+  nav.toc{display:flex; flex-wrap:wrap; gap:6px 14px; font-size:.85rem;}
+  nav.toc a{color:#CFE0EC; text-decoration:none; border-bottom:1px dashed #ffffff40; padding-bottom:1px;}
+  nav.toc a:hover, nav.toc a:focus-visible{color:#fff; border-color:#fff;}
+
+  section{padding:38px 0; scroll-margin-top:132px;}
+  section.alt{background:var(--paper-alt);}
+  h2.section-title{font-family:var(--serif); font-size:1.5rem; margin:0 0 6px; color:var(--blue-deep);}
+  p.section-lede{margin:0 0 22px; color:var(--ink-soft); max-width:68ch;}
+
+  .blueprint-box{
+    background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:20px 22px;
+  }
+  .blueprint-box ul{margin:8px 0 0; padding-left:20px;}
+  .blueprint-box li{margin-bottom:6px;}
+  .blueprint-box code, p code, li code{
+    font-family:var(--mono); background:var(--blue-tint); color:var(--blue-deep);
+    padding:1px 5px; border-radius:3px; font-size:.88em;
+  }
+
+  .code-grid{display:grid; grid-template-columns:1fr; gap:16px; margin-top:18px;}
+  @media(min-width:820px){ .code-grid{grid-template-columns:1fr 1fr;} }
+  .code-card{background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:14px 16px;}
+  .code-card h3{margin:0 0 8px; font-family:var(--serif); font-size:1.05rem; color:var(--blue-deep);}
+  .code-panel{position:relative;}
+  pre{
+    background:var(--blue-deep); color:#E7EEF3; padding:14px 16px; border-radius:4px; overflow-x:auto;
+    font-family:var(--mono); font-size:.8rem; line-height:1.5; margin:0; max-width:100%;
+  }
+  .copy-btn{
+    position:absolute; top:8px; right:8px; background:#ffffff22; color:#fff; border:1px solid #ffffff44;
+    border-radius:3px; font-size:.7rem; padding:4px 8px; cursor:pointer;
+  }
+  .copy-btn:hover{background:#ffffff3a;}
+
+  /* ---------- flow (life cycle steps) ---------- */
+  .flow{display:flex; flex-wrap:wrap; align-items:stretch; gap:0; margin-top:18px;}
+  .flow-step{
+    background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:12px 13px;
+    cursor:pointer; flex:1 1 130px; min-width:110px; text-align:left; font-family:inherit; color:var(--ink);
+  }
+  .flow-step .n{font-family:var(--mono); font-size:.7rem; color:var(--amber);}
+  .flow-step .t{font-weight:600; font-size:.88rem; margin-top:2px;}
+  .flow-step:hover, .flow-step:focus-visible{border-color:var(--blue); outline:none;}
+  .flow-step.active{background:var(--blue-deep); color:#fff; border-color:var(--blue-deep);}
+  .flow-step.active .n{color:#F1C08A;}
+  .flow-arrow{display:flex; align-items:center; justify-content:center; padding:0 5px; color:var(--ink-soft); font-size:1.05rem;}
+  .flow-detail{
+    margin-top:14px; background:var(--blue-tint); border:1px solid var(--line-soft); border-radius:4px;
+    padding:14px 16px; font-size:.95rem; min-height:1.4em;
+  }
+  .flow-detail b{color:var(--blue-deep);}
+
+  /* ---------- state cards ---------- */
+  .state-grid{display:grid; grid-template-columns:1fr; gap:12px;}
+  @media(min-width:640px){ .state-grid{grid-template-columns:repeat(2,1fr);} }
+  @media(min-width:980px){ .state-grid{grid-template-columns:repeat(4,1fr);} }
+  .state-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:14px 15px;
+    cursor:pointer; text-align:left; font-family:inherit; color:var(--ink); transition:box-shadow .15s;
+  }
+  .state-card h4{margin:0 0 6px; font-family:var(--serif); font-size:1.02rem; color:var(--blue-deep);}
+  .state-card p{margin:0; font-size:.85rem; color:var(--ink-soft); display:none;}
+  .state-card.open p{display:block;}
+  .state-card.flash{box-shadow:0 0 0 2px var(--amber);}
+  .state-card .hint{font-size:.75rem; color:var(--ink-soft); font-style:italic;}
+  .state-card.open .hint{display:none;}
+
+  .transitions{margin-top:22px;}
+  .transitions h3{font-family:var(--serif); font-size:1.1rem; color:var(--blue-deep); margin:0 0 10px;}
+  .trans-row{
+    display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:10px;
+    background:var(--panel); border:1px solid var(--line-soft); border-radius:4px; padding:9px 12px;
+    margin-bottom:6px; cursor:pointer; font-size:.86rem;
+  }
+  .trans-row:hover{border-color:var(--blue);}
+  .trans-row .from, .trans-row .to{font-weight:600; color:var(--blue-deep);}
+  .trans-row .trigger{font-family:var(--mono); font-size:.76rem; color:var(--amber); text-align:center; white-space:nowrap;}
+  @media(max-width:600px){ .trans-row{grid-template-columns:1fr; text-align:left;} .trans-row .trigger{text-align:left;} }
+
+  /* ---------- tabs (properties/methods) ---------- */
+  .tab-row{display:flex; gap:8px; margin-bottom:16px;}
+  .tab-btn{background:#fff; border:1px solid var(--line); padding:8px 16px; border-radius:3px; cursor:pointer; font-size:.88rem;}
+  .tab-btn.active{background:var(--blue-deep); color:#fff; border-color:var(--blue-deep);}
+  .pm-grid{display:grid; grid-template-columns:1fr; gap:10px;}
+  @media(min-width:700px){ .pm-grid{grid-template-columns:1fr 1fr;} }
+  .pm-item{background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:12px 14px;}
+  .pm-item .name{font-family:var(--mono); font-size:.88rem; color:var(--blue-deep); font-weight:600;}
+  .pm-item .desc{font-size:.86rem; margin-top:4px; color:var(--ink-soft);}
+
+  /* ---------- walkthrough ---------- */
+  .annot-grid{display:grid; grid-template-columns:1fr; gap:12px; margin-top:16px;}
+  @media(min-width:760px){ .annot-grid{grid-template-columns:repeat(3,1fr);} }
+  .annot-card{border-radius:4px; padding:13px 14px; font-size:.86rem;}
+  .annot-card h4{margin:0 0 6px; font-family:var(--mono); font-size:.8rem;}
+  .annot-card.try{background:var(--blue-tint);}
+  .annot-card.catch{background:var(--amber-tint);}
+  .annot-card.finally{background:var(--sage-tint);}
+
+  /* ---------- quiz ---------- */
+  .quiz-box{background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:20px 22px;}
+  .quiz-progress{font-family:var(--mono); font-size:.78rem; color:var(--ink-soft); margin-bottom:10px;}
+  .quiz-q{font-size:1rem; margin-bottom:12px;}
+  .quiz-choices{display:flex; flex-direction:column; gap:8px;}
+  .quiz-choice{text-align:left; border:1px solid var(--line); background:#fff; padding:10px 13px; border-radius:3px; cursor:pointer; font-size:.9rem;}
+  .quiz-choice:hover{border-color:var(--blue);}
+  .quiz-choice.correct{background:var(--sage-tint); border-color:var(--sage);}
+  .quiz-choice.wrong{background:var(--amber-tint); border-color:var(--amber);}
+  .quiz-feedback{margin-top:12px; font-size:.88rem; background:#fff; border-radius:3px; padding:10px 12px; display:none;}
+  .quiz-feedback.show{display:block;}
+  .quiz-nav{margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;}
+  .quiz-nav button{background:var(--blue-deep); color:#fff; border:none; padding:9px 16px; border-radius:3px; cursor:pointer; font-size:.88rem;}
+  .quiz-nav button[disabled]{opacity:.4; cursor:default;}
+  .quiz-score{text-align:center; padding:24px 0;}
+  .quiz-score .big{font-family:var(--serif); font-size:2.4rem; color:var(--blue-deep);}
+  .quiz-score .buttons{margin-top:14px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;}
+  .quiz-score .buttons button{background:var(--blue-deep); color:#fff; border:none; padding:9px 16px; border-radius:3px; cursor:pointer;}
+
+  footer{padding:26px 0 40px; text-align:center; color:var(--ink-soft); font-size:.82rem;}
+  :focus-visible{outline:2px solid var(--amber); outline-offset:2px;}
+  @media(prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="brand">
+      <span class="code">IT1811</span>
+      <h1>Life Cycle of a Thread</h1>
+    </div>
+    <nav class="toc">
+      <a href="#overview">Overview</a>
+      <a href="#lifecycle">Life cycle</a>
+      <a href="#states">Thread states</a>
+      <a href="#propsmethods">Properties &amp; methods</a>
+      <a href="#walkthrough">Code walkthrough</a>
+      <a href="#multithreading">Multithreading</a>
+      <a href="#quiz">Quiz</a>
+    </nav>
+  </div>
+  <div class="wrap"><p class="sub">Based on 04 Handout 1 (IT1811, Threads) — Harwani (2015), Learning object-oriented programming in C# 5.0.</p></div>
+</header>
+
+<section id="overview">
+  <div class="wrap">
+    <h2 class="section-title">What is a thread?</h2>
+    <div class="blueprint-box tick">
+      <ul>
+        <li>A <code>Thread</code> is a class in C#.NET found in the <code>System.Threading</code> namespace, used to create and control threads — its properties and methods are already provided.</li>
+        <li>A thread is an independent execution unit containing a piece of code. When a process begins, the <strong>main thread</strong> is started.</li>
+        <li>All threads within a process share the same state and memory space, and communicate with each other to perform different tasks.</li>
+      </ul>
+    </div>
+    <div class="code-grid">
+      <div class="code-card">
+        <h3>Main thread</h3>
+        <p style="font-size:.88rem; color:var(--ink-soft); margin:0 0 10px;">The first thread performed in a process. Other threads created afterward are its <em>child threads</em>.</p>
+        <div class="code-panel">
+          <pre><code id="code-main">//Sample Main Thread
+Thread basicThread = Thread.CurrentThread;
+basicThread.Name = "Basic C# Thread";
+Console.WriteLine("Current Thread: {0}", basicThread.Name);</code></pre>
+          <button type="button" class="copy-btn" data-target="code-main">Copy</button>
+        </div>
+      </div>
+      <div class="code-card">
+        <h3>Child thread</h3>
+        <p style="font-size:.88rem; color:var(--ink-soft); margin:0 0 10px;">Created by writing a delegate, passing a callback method to it. <code>ThreadStart</code> defines the method that runs when the thread starts.</p>
+        <div class="code-panel">
+          <pre><code id="code-child">//Sample Child Thread
+private void btnRunThread_Click(object sender, EventArgs e)
+{
+    ThreadStart delThread = new ThreadStart(ChildThreadMethod);
+    Thread childThread = new Thread(delThread);
+    Thread.CurrentThread.Name = "Main Thread";
+    Console.WriteLine(Thread.CurrentThread.Name);
+    childThread.Start();
+}
+//method
+public void ChildThreadMethod()
+{
+    Console.WriteLine("Calling child thread");
+}</code></pre>
+          <button type="button" class="copy-btn" data-target="code-child">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="lifecycle">
+  <div class="wrap">
+    <h2 class="section-title">The life cycle, step by step</h2>
+    <p class="section-lede">A thread moves through several states from creation to completion. Click each step to see what triggers the move and where it leads (Harwani, 2015).</p>
+    <div class="flow" id="flowSteps"></div>
+    <div class="flow-detail" id="flowDetail">Click a step above to see what happens at that point in the thread's life.</div>
+  </div>
+</section>
+
+<section id="states">
+  <div class="wrap">
+    <h2 class="section-title">Thread states, at a glance</h2>
+    <p class="section-lede">Click a state to open its definition. Then check the transitions list below to see exactly what moves a thread from one state to another.</p>
+    <div class="state-grid" id="stateGrid"></div>
+    <div class="transitions">
+      <h3>Transitions map</h3>
+      <div id="transList"></div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="propsmethods">
+  <div class="wrap">
+    <h2 class="section-title">Properties &amp; methods of the Thread class</h2>
+    <p class="section-lede">The Thread class exposes properties to inspect a thread and methods to control it.</p>
+    <div class="tab-row">
+      <button type="button" class="tab-btn active" data-tab="properties">Properties</button>
+      <button type="button" class="tab-btn" data-tab="methods">Methods</button>
+    </div>
+    <div class="pm-grid" id="pmGrid"></div>
+  </div>
+</section>
+
+<section id="walkthrough">
+  <div class="wrap">
+    <h2 class="section-title">Code walkthrough: controlling a thread's life cycle</h2>
+    <p class="section-lede">This example starts a child thread, lets it run for a few seconds, then aborts it — showing <code>Start()</code>, <code>Sleep()</code>, and <code>Abort()</code> together.</p>
+    <div class="code-panel">
+      <pre><code id="code-walk">private Thread _childThread;
+
+private void btnCheck_Click(object sender, EventArgs e)
+{
+    ThreadStart delThreadObj = new ThreadStart(ThreadCycle);
+    Console.WriteLine("Will Create Child Thread In Main Thread\u2026");
+    _childThread = new Thread(delThreadObj);
+    _childThread.Start();
+    Thread.Sleep(3000); //3 seconds before aborting the thread.
+    Console.WriteLine("Aborting Child Thread");
+    _childThread.Abort();
+}
+
+public void ThreadCycle()
+{
+    try
+    {
+        Console.WriteLine("Thread starts here!");
+        Console.WriteLine("Paused for 2 seconds: child thread");
+        Console.Write("Countdown: ");
+        for (int x = 2; x > 0; x--) {
+            Console.Write(x + " ");
+            Thread.Sleep(1000);
+        }
+        Console.WriteLine("\nChild thread resume");
+        Console.WriteLine("WaitSleepJoin State: (Child Thread):" +
+            (_childThread.ThreadState == ThreadState.WaitSleepJoin));
+        Thread.Sleep(1000); //Thread sleep or pause for 1 second
+        Console.WriteLine("Child Thread Done.");
+    }
+    catch (ThreadAbortException ex)
+    {
+        Console.WriteLine("Exception Message: " + ex.Message);
+    }
+    finally {
+        Console.WriteLine("Finally Block the Thread!");
+    }
+}</code></pre>
+      <button type="button" class="copy-btn" data-target="code-walk">Copy</button>
+    </div>
+    <div class="annot-grid">
+      <div class="annot-card try"><h4>TRY</h4>The child thread does its work — sleeping (WaitSleepJoin) between countdown ticks. If <code>Abort()</code> is called on the main thread while this is running, execution here is interrupted.</div>
+      <div class="annot-card catch"><h4>CATCH (ThreadAbortException)</h4><code>Abort()</code> throws a <code>ThreadAbortException</code> inside the aborted thread. It can be caught here — but it is automatically re-thrown at the end of the <code>catch</code> block, so the thread still terminates.</div>
+      <div class="annot-card finally"><h4>FINALLY</h4>Runs no matter what — whether the thread finished normally or was aborted — so cleanup code always executes before the thread reaches <strong>Stopped</strong>.</div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="multithreading">
+  <div class="wrap">
+    <h2 class="section-title">Multithreading &amp; race conditions</h2>
+    <p class="section-lede">Multithreading lets an application run more than one execution path at the same time. The CPU serves each thread for a time slice in round-robin fashion (Harwani, 2015, p. 438).</p>
+    <div class="code-panel">
+      <pre><code id="code-multi">private Thread _childThread1, _childThread2, _childThread3;
+
+private void btnStart_Click(object sender, EventArgs e)
+{
+    Console.WriteLine("--------");
+    Console.WriteLine("Main Thread Running\u2026");
+    ThreadStart delObjThread = new ThreadStart(Method1);
+
+    _childThread1 = new Thread(delObjThread);
+    _childThread1.Name = "Child Thread 1";
+    _childThread2 = new Thread(delObjThread);
+    _childThread2.Name = "Child Thread 2";
+
+    _childThread3 = new Thread(new ThreadStart(Method2));
+    _childThread3.Name = "Child Thread 3";
+
+    _childThread1.Start();
+    _childThread2.Start();
+    _childThread3.Start();
+
+    _childThread1.Join();
+    _childThread2.Join();
+    _childThread3.Join();
+    Console.WriteLine("Value of x: " + x);
+    Console.WriteLine("Value of y: " + y);
+}
+///Methods to be called in ThreadStart delegate
+public void Method1(){
+    Console.WriteLine(Thread.CurrentThread.Name + " running...");
+    x++;
+}
+public void Method2(){
+    Console.WriteLine(Thread.CurrentThread.Name + " running...");
+    y++;
+}</code></pre>
+      <button type="button" class="copy-btn" data-target="code-multi">Copy</button>
+    </div>
+    <div class="blueprint-box tick" style="margin-top:16px;">
+      <p style="margin:0;"><strong>Why this is a race condition:</strong> <code>_childThread1</code> and <code>_childThread2</code> both run <code>Method1</code>, and both increment the <em>same</em> shared variable <code>x</code> at roughly the same time. Because neither thread's increment is synchronized with the other, the two updates to <code>x</code> can overlap — which is exactly what a race condition is: two threads accessing and manipulating the same resource simultaneously, with an outcome that depends on timing. <code>Join()</code> is used here only to make the main thread wait until all three child threads finish — it does not, by itself, protect <code>x</code> from being modified unsafely while they run.</p>
+    </div>
+  </div>
+</section>
+
+<section id="quiz">
+  <div class="wrap">
+    <h2 class="section-title">Quiz: check your understanding</h2>
+    <p class="section-lede">Eight scenario-based questions on states, transitions, and thread control.</p>
+    <div class="quiz-box" id="quizBox"></div>
+  </div>
+</section>
+
+<footer>IT1811 — Life Cycle of a Thread · Based on 04 Handout 1, *Property of STI.</footer>
+
+<script>
+(function(){
+"use strict";
+
+function esc(s){ return String(s).replace(/[&<>]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]; }); }
+
+/* ============================= DATA ============================= */
+
+var LIFECYCLE = [
+ {n:"1", t:"Unstarted", text:"<b>Unstarted:</b> A new thread begins its life cycle in the <code>Unstarted</code> state \u2014 it exists in the CLR but hasn't been told to run yet."},
+ {n:"2", t:"Start()", text:"<b>Start() is called:</b> The thread stays <code>Unstarted</code> until the <code>Start</code> method is called, which moves it into the <code>Started</code> state (also called Ready or Runnable)."},
+ {n:"3", t:"Running", text:"<b>Running:</b> Among all <code>Started</code> threads, the highest-priority one is given the CPU and enters the <code>Running</code> state."},
+ {n:"4", t:"Stopped / Abort", text:"<b>Stopped (or Abort):</b> A <code>Running</code> thread enters <code>Stopped</code> once its job is done. It can also be forced there by calling <code>Abort()</code>, which throws a <code>ThreadAbortException</code> and normally terminates the thread."},
+ {n:"5", t:"Blocked (I/O)", text:"<b>Blocked:</b> A thread enters <code>Blocked</code> when it issues an input/output (I/O) request \u2014 the OS blocks it to perform the I/O, and no CPU time is assigned to it while blocked."},
+ {n:"6", t:"Back to Started", text:"<b>I/O completes:</b> Once the I/O operation finishes, the <code>Blocked</code> thread returns to the <code>Started</code> state so it can resume execution."},
+ {n:"7", t:"WaitSleepJoin", text:"<b>WaitSleepJoin:</b> A <code>Running</code> thread enters <code>WaitSleepJoin</code> when it's asked to sleep for a set duration, or when the monitor's <code>Wait</code> method is called. It leaves this state when another thread calls the monitor's <code>Pulse</code> (moves the next waiting thread to <code>Started</code>) or <code>PulseAll</code> (moves all waiting threads to <code>Started</code>)."},
+ {n:"8", t:"Sleep expires / Interrupt()", text:"<b>Resuming:</b> A sleeping thread returns to <code>Started</code> once its sleep duration expires \u2014 or any thread in <code>WaitSleepJoin</code> can be returned to <code>Started</code> early if another thread calls its <code>Interrupt</code> method."},
+ {n:"9", t:"Join()", text:"<b>Join():</b> If a thread can't continue until another thread finishes, it calls that other thread's <code>Join</code> method. The waiting thread leaves <code>WaitSleepJoin</code> once the joined thread completes execution."}
+];
+
+var STATES = [
+ {name:"Unstarted", def:"A thread is created within the Common Language Runtime (CLR) but has not started."},
+ {name:"Ready", def:"A thread is ready to run and is waiting for the CPU time."},
+ {name:"Running", def:"A thread is in running mode after invoking its Start method."},
+ {name:"WaitSleepJoin", def:"A running thread is suspended temporarily by invoking either the Sleep method or the monitor's Wait method."},
+ {name:"Started", def:"A suspended thread resumes to the Started state when the conditions for which it was suspended are no longer valid."},
+ {name:"Blocked", def:"A thread is blocked when it is waiting for a resource or I/O operations."},
+ {name:"Stopped", def:"A thread has finished its task."}
+];
+
+var TRANSITIONS = [
+ {from:"Unstarted", trigger:"Start()", to:"Started / Ready"},
+ {from:"Started / Ready", trigger:"CPU assigned (highest priority)", to:"Running"},
+ {from:"Running", trigger:"task completes, or Abort()", to:"Stopped"},
+ {from:"Running", trigger:"I/O request issued", to:"Blocked"},
+ {from:"Blocked", trigger:"I/O operation completes", to:"Started"},
+ {from:"Running", trigger:"Sleep() or Monitor.Wait()", to:"WaitSleepJoin"},
+ {from:"WaitSleepJoin", trigger:"sleep duration expires", to:"Started"},
+ {from:"WaitSleepJoin", trigger:"Interrupt() called", to:"Started"},
+ {from:"WaitSleepJoin", trigger:"Monitor.Pulse() / PulseAll()", to:"Started"},
+ {from:"Running", trigger:"Join() on another thread", to:"WaitSleepJoin \u2192 Started when joined thread ends"}
+];
+
+var PROPERTIES = [
+ {name:"CurrentThread", desc:"Returns the current thread that is running."},
+ {name:"IsAlive", desc:"Returns a Boolean value indicating the execution status of the recent thread."},
+ {name:"IsBackground", desc:"Used to get or set a value that indicates whether the thread is a background thread or not."},
+ {name:"Name", desc:"Used to get or set the name of the thread."},
+ {name:"Priority", desc:"Used to get or set a value that represents the priority of a thread."},
+ {name:"ThreadState", desc:"Used to get the value that contains the states of the recent thread."}
+];
+
+var METHODS = [
+ {name:"Abort()", desc:"Terminates the thread when called, and raises a ThreadAbortException in the thread."},
+ {name:"Interrupt()", desc:"Interrupts a thread that is in the WaitSleepJoin state."},
+ {name:"Join()", desc:"Stops the calling thread until the target thread terminates."},
+ {name:"ResetAbort()", desc:"A static method used to withdraw an abort request for the ongoing thread."},
+ {name:"Start()", desc:"Used to start a thread."},
+ {name:"Sleep()", desc:"A static method used to pause a thread for the stated number of milliseconds."}
+];
+
+var QUIZ = [
+ {q:"A brand-new Thread object has just been created with `new Thread(...)` but `Start()` hasn't been called yet. What state is it in?",
+  choices:["Unstarted","Ready","Running","Blocked"], correct:0,
+  explain:"A thread exists in the CLR but hasn't been told to run yet — that's exactly the Unstarted state, per Harwani (2015)."},
+ {q:"What exception is thrown inside a thread when another thread calls its Abort() method?",
+  choices:["ThreadAbortException","ThreadInterruptedException","OperationCanceledException","ThreadStateException"], correct:0,
+  explain:"Abort() raises a ThreadAbortException in the target thread, which is automatically re-thrown at the end of a catch block even if caught."},
+ {q:"Thread A must wait until Thread B finishes its task before Thread A can continue. Which method should Thread A call?",
+  choices:["b.Join()","b.Sleep()","b.Interrupt()","b.ResetAbort()"], correct:0,
+  explain:"Join() makes the calling thread wait until the target thread (b) terminates — exactly this scenario."},
+ {q:"A Running thread issues a file-read request. What state does it enter while the OS handles the I/O?",
+  choices:["Blocked","WaitSleepJoin","Stopped","Ready"], correct:0,
+  explain:"A thread enters Blocked when it issues an I/O request; the OS blocks it and no CPU time is assigned until the I/O completes."},
+ {q:"A thread is sleeping via Thread.Sleep(5000), but another thread calls its Interrupt() method after 1 second. What happens?",
+  choices:["The sleeping thread returns to Started early, before the 5 seconds are up","Nothing — Interrupt() only works on Blocked threads","The thread is forced into Stopped immediately","The thread restarts Sleep(5000) from zero"], correct:0,
+  explain:"Any thread in WaitSleepJoin can be returned to Started if its Interrupt method is called by another thread — it doesn't have to wait out the full sleep duration."},
+ {q:"Which Thread property would you check or set to control whether a thread keeps the application running after the main thread ends?",
+  choices:["IsBackground","IsAlive","Priority","ThreadState"], correct:0,
+  explain:"IsBackground gets or sets whether a thread is a background thread — background threads don't keep the app alive on their own."},
+ {q:"Two child threads both run the same method, which increments a shared variable `x` with `x++`, and both are started at roughly the same time. What is this situation called?",
+  choices:["A race condition","A deadlock","A thread leak","Polymorphism"], correct:0,
+  explain:"When two or more threads access and modify the same shared resource concurrently, with the outcome depending on timing, that's a race condition — as described for _childThread1 and _childThread2 both incrementing x."},
+ {q:"After calling Abort() on a thread, a developer decides they want to cancel that pending abort request. Which method should they call?",
+  choices:["Thread.ResetAbort()","thread.Interrupt()","thread.Join()","thread.Sleep(0)"], correct:0,
+  explain:"ResetAbort() is a static method used specifically to withdraw an abort request for the ongoing thread."}
+];
+
+/* ============================= LIFECYCLE FLOW ============================= */
+
+function renderFlow(){
+  var container = document.getElementById("flowSteps");
+  if (!container) return;
+  container.innerHTML = "";
+  LIFECYCLE.forEach(function(step, idx){
+    var btn = document.createElement("button");
+    btn.className = "flow-step";
+    btn.type = "button";
+    btn.innerHTML = '<div class="n">STEP ' + step.n + '</div><div class="t">' + esc(step.t) + '</div>';
+    btn.addEventListener("click", function(){
+      var all = container.querySelectorAll(".flow-step");
+      for (var i=0;i<all.length;i++){ all[i].classList.remove("active"); }
+      btn.classList.add("active");
+      var detail = document.getElementById("flowDetail");
+      if (detail) detail.innerHTML = step.text;
+    });
+    container.appendChild(btn);
+    if (idx < LIFECYCLE.length - 1){
+      var arrow = document.createElement("div");
+      arrow.className = "flow-arrow";
+      arrow.textContent = "\u2192";
+      container.appendChild(arrow);
+    }
+  });
+}
+
+/* ============================= STATE CARDS + TRANSITIONS ============================= */
+
+function renderStates(){
+  var grid = document.getElementById("stateGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  STATES.forEach(function(s){
+    var card = document.createElement("button");
+    card.type = "button";
+    card.className = "state-card";
+    card.setAttribute("data-state", s.name);
+    card.innerHTML = '<h4>' + esc(s.name) + '</h4><span class="hint">Click to see definition</span><p>' + esc(s.def) + '</p>';
+    card.addEventListener("click", function(){ card.classList.toggle("open"); });
+    grid.appendChild(card);
+  });
+}
+
+function flashState(name){
+  var grid = document.getElementById("stateGrid");
+  if (!grid) return;
+  var cards = grid.querySelectorAll(".state-card");
+  for (var i=0;i<cards.length;i++){
+    var cardName = cards[i].getAttribute("data-state");
+    if (name.indexOf(cardName) !== -1){
+      cards[i].classList.add("open", "flash");
+      setTimeout(function(el){ return function(){ el.classList.remove("flash"); }; }(cards[i]), 1200);
+    }
+  }
+}
+
+function renderTransitions(){
+  var box = document.getElementById("transList");
+  if (!box) return;
+  box.innerHTML = "";
+  TRANSITIONS.forEach(function(t){
+    var row = document.createElement("div");
+    row.className = "trans-row";
+    row.innerHTML =
+      '<span class="from">' + esc(t.from) + '</span>' +
+      '<span class="trigger">\u2014 ' + esc(t.trigger) + ' \u2192</span>' +
+      '<span class="to">' + esc(t.to) + '</span>';
+    row.addEventListener("click", function(from, to){
+      return function(){ flashState(from); flashState(to); var el=document.getElementById("stateGrid"); if(el) el.scrollIntoView({behavior:"smooth", block:"center"}); };
+    }(t.from, t.to));
+    box.appendChild(row);
+  });
+}
+
+/* ============================= PROPERTIES / METHODS TABS ============================= */
+
+function renderPM(tab){
+  var grid = document.getElementById("pmGrid");
+  if (!grid) return;
+  var data = tab === "methods" ? METHODS : PROPERTIES;
+  grid.innerHTML = "";
+  data.forEach(function(item){
+    var el = document.createElement("div");
+    el.className = "pm-item";
+    el.innerHTML = '<div class="name">' + esc(item.name) + '</div><div class="desc">' + esc(item.desc) + '</div>';
+    grid.appendChild(el);
+  });
+}
+
+function bindTabs(){
+  var tabs = document.querySelectorAll(".tab-btn");
+  for (var i=0;i<tabs.length;i++){
+    tabs[i].addEventListener("click", function(e){
+      var all = document.querySelectorAll(".tab-btn");
+      for (var j=0;j<all.length;j++){ all[j].classList.remove("active"); }
+      e.currentTarget.classList.add("active");
+      renderPM(e.currentTarget.getAttribute("data-tab"));
+    });
+  }
+}
+
+/* ============================= COPY BUTTONS ============================= */
+
+function fallbackCopy(text, btn){
+  var ta = document.createElement("textarea");
+  ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); btn.textContent = "Copied!"; setTimeout(function(){ btn.textContent = "Copy"; }, 1400); }
+  catch(e){ /* ignore */ }
+  document.body.removeChild(ta);
+}
+
+function bindCopyButtons(){
+  var buttons = document.querySelectorAll(".copy-btn");
+  for (var i=0;i<buttons.length;i++){
+    buttons[i].addEventListener("click", function(e){
+      var targetId = e.currentTarget.getAttribute("data-target");
+      var codeEl = document.getElementById(targetId);
+      if (!codeEl) return;
+      var text = codeEl.textContent;
+      var btn = e.currentTarget;
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(function(){
+          btn.textContent = "Copied!";
+          setTimeout(function(){ btn.textContent = "Copy"; }, 1400);
+        }).catch(function(){ fallbackCopy(text, btn); });
+      } else {
+        fallbackCopy(text, btn);
+      }
+    });
+  }
+}
+
+/* ============================= QUIZ ============================= */
+
+var quizState = { index:0, score:0, answered:false };
+
+function renderQuiz(){
+  var box = document.getElementById("quizBox");
+  if (!box) return;
+  if (quizState.index >= QUIZ.length){
+    box.innerHTML =
+      '<div class="quiz-score">' +
+        '<div class="big">' + quizState.score + ' / ' + QUIZ.length + '</div>' +
+        '<p>correct answers</p>' +
+        '<div class="buttons"><button type="button" id="tryAgainBtn">Try Again</button></div>' +
+      '</div>';
+    var tryAgain = document.getElementById("tryAgainBtn");
+    if (tryAgain) tryAgain.addEventListener("click", function(){ quizState = {index:0, score:0, answered:false}; renderQuiz(); });
+    return;
+  }
+  var q = QUIZ[quizState.index];
+  quizState.answered = false;
+  box.innerHTML =
+    '<div class="quiz-progress">Question ' + (quizState.index + 1) + ' of ' + QUIZ.length + ' &middot; Score ' + quizState.score + '</div>' +
+    '<div class="quiz-q">' + esc(q.q) + '</div>' +
+    '<div class="quiz-choices" id="quizChoices"></div>' +
+    '<div class="quiz-feedback" id="quizFeedback"></div>' +
+    '<div class="quiz-nav"><button type="button" id="quizNextBtn" disabled>Next</button></div>';
+
+  var choicesEl = document.getElementById("quizChoices");
+  q.choices.forEach(function(choiceText, idx){
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "quiz-choice";
+    btn.textContent = choiceText;
+    btn.addEventListener("click", function(){
+      if (quizState.answered) return;
+      quizState.answered = true;
+      var all = choicesEl.querySelectorAll(".quiz-choice");
+      for (var i=0;i<all.length;i++){ all[i].setAttribute("disabled","true"); }
+      var fb = document.getElementById("quizFeedback");
+      if (idx === q.correct){
+        quizState.score++;
+        btn.classList.add("correct");
+        if (fb){ fb.className = "quiz-feedback show"; fb.innerHTML = "<b>Correct.</b> " + esc(q.explain); }
+      } else {
+        btn.classList.add("wrong");
+        all[q.correct].classList.add("correct");
+        if (fb){ fb.className = "quiz-feedback show"; fb.innerHTML = "<b>Not quite.</b> " + esc(q.explain); }
+      }
+      var nextBtn = document.getElementById("quizNextBtn");
+      if (nextBtn) nextBtn.removeAttribute("disabled");
+    });
+    choicesEl.appendChild(btn);
+  });
+
+  var nextBtn = document.getElementById("quizNextBtn");
+  if (nextBtn){
+    nextBtn.addEventListener("click", function(){
+      quizState.index++;
+      renderQuiz();
+    });
+  }
+}
+
+/* ============================= INIT ============================= */
+
+function init(){
+  renderFlow();
+  renderStates();
+  renderTransitions();
+  bindTabs();
+  renderPM("properties");
+  bindCopyButtons();
+  renderQuiz();
+}
+
+if (document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}
+
+})();
+</script>
+</body>
+</html>
