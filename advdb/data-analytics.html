@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data Analytics, Data Warehousing, OLAP &amp; Data Mining</title>
+<style>
+  :root{
+    --paper:#EDE8DA; --paper-alt:#E3DDCB; --panel:#F5F1E4;
+    --ink:#1E2A35; --ink-soft:#4B5A66;
+    --blue:#2B5C86; --blue-deep:#16324F; --blue-tint:#DCE7EE;
+    --amber:#A85A26; --amber-tint:#F1E0CE;
+    --sage:#3F7157; --sage-tint:#DCE8DE;
+    --line:#16324F40; --line-soft:#16324F22;
+    --mono: ui-monospace, 'Cascadia Code', 'Fira Code', Menlo, Consolas, monospace;
+    --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; font-family:var(--sans); color:var(--ink); background:var(--paper);
+    background-image:
+      linear-gradient(var(--line-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+    background-size:28px 28px;
+    line-height:1.55;
+  }
+  a{color:var(--blue);}
+  button{font-family:inherit;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 20px;}
+  .tick{position:relative;}
+  .tick::before,.tick::after{content:"";position:absolute;width:10px;height:10px;border:1.5px solid var(--blue-deep);opacity:.55;}
+  .tick::before{top:-1px;left:-1px;border-right:none;border-bottom:none;}
+  .tick::after{bottom:-1px;right:-1px;border-left:none;border-top:none;}
+
+  header.masthead{
+    background:var(--blue-deep); color:var(--paper); padding:16px 0 14px;
+    border-bottom:3px solid var(--amber);
+    position:sticky; top:0; z-index:100;
+    box-shadow:0 6px 14px -8px rgba(0,0,0,.45);
+  }
+  header.masthead .wrap{display:flex; flex-wrap:wrap; align-items:flex-end; gap:18px; justify-content:space-between;}
+  .brand{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;}
+  .brand .code{font-family:var(--mono); font-size:.85rem; letter-spacing:.04em; border:1px solid #ffffff55; padding:3px 8px; border-radius:3px;}
+  .brand h1{font-family:var(--serif); font-weight:700; font-size:1.55rem; margin:6px 0 0;}
+  header.masthead p.sub{margin:4px 0 0; color:#D9E3EC; font-size:.9rem; max-width:52ch;}
+  nav.toc{display:flex; flex-wrap:wrap; gap:6px 13px; font-size:.83rem;}
+  nav.toc a{color:#CFE0EC; text-decoration:none; border-bottom:1px dashed #ffffff40; padding-bottom:1px;}
+  nav.toc a:hover, nav.toc a:focus-visible{color:#fff; border-color:#fff;}
+  header.masthead.unstuck{position:static; box-shadow:none;}
+  .sub-row{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;}
+  .sticky-toggle{
+    background:#ffffff18; color:#fff; border:1px solid #ffffff44; border-radius:3px;
+    font-size:.72rem; padding:4px 10px; cursor:pointer; font-family:var(--mono); white-space:nowrap; flex:none;
+  }
+  .sticky-toggle:hover{background:#ffffff30;}
+
+  section{padding:38px 0; scroll-margin-top:132px;}
+  section.alt{background:var(--paper-alt);}
+  .module-label{font-family:var(--mono); font-size:.72rem; color:var(--amber); letter-spacing:.03em; margin-bottom:4px;}
+  h2.section-title{font-family:var(--serif); font-size:1.45rem; margin:0 0 6px; color:var(--blue-deep);}
+  p.section-lede{margin:0 0 22px; color:var(--ink-soft); max-width:70ch;}
+
+  .blueprint-box{background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:20px 22px;}
+  .blueprint-box p{margin:0 0 10px;}
+  .blueprint-box p:last-child{margin-bottom:0;}
+  code{font-family:var(--mono); background:var(--blue-tint); color:var(--blue-deep); padding:1px 5px; border-radius:3px; font-size:.88em;}
+
+  /* ---------- generic flow (reused for characteristics + lifecycle) ---------- */
+  .flow{display:flex; flex-wrap:wrap; align-items:stretch; gap:0; margin-top:18px;}
+  .flow-step{
+    background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:12px 13px;
+    cursor:pointer; flex:1 1 130px; min-width:110px; text-align:left; font-family:inherit; color:var(--ink);
+  }
+  .flow-step .n{font-family:var(--mono); font-size:.7rem; color:var(--amber);}
+  .flow-step .t{font-weight:600; font-size:.9rem; margin-top:2px;}
+  .flow-step:hover, .flow-step:focus-visible{border-color:var(--blue); outline:none;}
+  .flow-step.active{background:var(--blue-deep); color:#fff; border-color:var(--blue-deep);}
+  .flow-step.active .n{color:#F1C08A;}
+  .flow-arrow{display:flex; align-items:center; justify-content:center; padding:0 5px; color:var(--ink-soft); font-size:1.05rem;}
+  .flow-detail{
+    margin-top:14px; background:var(--blue-tint); border:1px solid var(--line-soft); border-radius:4px;
+    padding:14px 16px; font-size:.95rem; min-height:1.4em;
+  }
+  .flow-detail b{color:var(--blue-deep);}
+  .flow-detail.sage{background:var(--sage-tint);}
+
+  /* ---------- glossary cards (reused for components, star schema, techniques) ---------- */
+  .g-grid{display:grid; grid-template-columns:1fr; gap:12px; margin-top:6px;}
+  @media(min-width:680px){ .g-grid{grid-template-columns:repeat(2,1fr);} }
+  @media(min-width:1020px){ .g-grid{grid-template-columns:repeat(3,1fr);} }
+  .g-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:14px 15px;
+    cursor:pointer; text-align:left; font-family:inherit; color:var(--ink);
+  }
+  .g-card h4{margin:0 0 6px; font-family:var(--serif); font-size:1.02rem; color:var(--blue-deep);}
+  .g-card p{margin:0; font-size:.87rem; color:var(--ink-soft); display:none;}
+  .g-card.open p{display:block;}
+  .g-card .hint{font-size:.74rem; color:var(--ink-soft); font-style:italic;}
+  .g-card.open .hint{display:none;}
+
+  /* ---------- star schema mini-diagram ---------- */
+  .star-diagram{display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:10px; margin:20px 0 6px;}
+  .star-fact{
+    background:var(--blue-deep); color:#fff; border-radius:4px; padding:16px 20px; font-family:var(--serif);
+    font-size:1.05rem; cursor:pointer; border:none; text-align:center; min-width:150px;
+  }
+  .star-dims{display:flex; flex-wrap:wrap; justify-content:center; gap:10px;}
+  .star-dim{
+    background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:10px 14px; font-size:.85rem;
+    cursor:pointer; font-family:inherit; color:var(--ink);
+  }
+  .star-dim:hover, .star-fact:hover{border-color:var(--blue);}
+
+  /* ---------- comparison tables ---------- */
+  .table-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:4px; margin-top:18px;}
+  table.compare{border-collapse:collapse; width:100%; min-width:520px; font-size:.87rem;}
+  table.compare th{background:var(--blue-deep); color:#fff; text-align:left; padding:9px 12px; font-weight:600; font-family:var(--mono); font-size:.75rem;}
+  table.compare td{padding:9px 12px; border-top:1px solid var(--line-soft); vertical-align:top;}
+  table.compare tr:nth-child(odd) td{background:var(--panel);}
+
+  /* ---------- code panels ---------- */
+  .code-card{background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:14px 16px; margin-top:16px;}
+  .code-card h3{margin:0 0 4px; font-family:var(--serif); font-size:1.05rem; color:var(--blue-deep);}
+  .code-card .desc{font-size:.88rem; color:var(--ink-soft); margin:0 0 10px;}
+  .code-panel{position:relative;}
+  pre{
+    background:var(--blue-deep); color:#E7EEF3; padding:14px 16px; border-radius:4px; overflow-x:auto;
+    font-family:var(--mono); font-size:.8rem; line-height:1.5; margin:0; max-width:100%;
+  }
+  .copy-btn{
+    position:absolute; top:8px; right:8px; background:#ffffff22; color:#fff; border:1px solid #ffffff44;
+    border-radius:3px; font-size:.7rem; padding:4px 8px; cursor:pointer;
+  }
+  .copy-btn:hover{background:#ffffff3a;}
+
+  /* ---------- quiz ---------- */
+  .quiz-box{background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:20px 22px;}
+  .quiz-progress{font-family:var(--mono); font-size:.78rem; color:var(--ink-soft); margin-bottom:10px;}
+  .quiz-q{font-size:1rem; margin-bottom:12px;}
+  .quiz-choices{display:flex; flex-direction:column; gap:8px;}
+  .quiz-choice{text-align:left; border:1px solid var(--line); background:#fff; padding:10px 13px; border-radius:3px; cursor:pointer; font-size:.9rem;}
+  .quiz-choice:hover{border-color:var(--blue);}
+  .quiz-choice.correct{background:var(--sage-tint); border-color:var(--sage);}
+  .quiz-choice.wrong{background:var(--amber-tint); border-color:var(--amber);}
+  .quiz-feedback{margin-top:12px; font-size:.88rem; background:#fff; border-radius:3px; padding:10px 12px; display:none;}
+  .quiz-feedback.show{display:block;}
+  .quiz-nav{margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;}
+  .quiz-nav button{background:var(--blue-deep); color:#fff; border:none; padding:9px 16px; border-radius:3px; cursor:pointer; font-size:.88rem;}
+  .quiz-nav button[disabled]{opacity:.4; cursor:default;}
+  .quiz-score{text-align:center; padding:24px 0;}
+  .quiz-score .big{font-family:var(--serif); font-size:2.4rem; color:var(--blue-deep);}
+  .quiz-score .buttons{margin-top:14px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;}
+  .quiz-score .buttons button{background:var(--blue-deep); color:#fff; border:none; padding:9px 16px; border-radius:3px; cursor:pointer;}
+
+  footer{padding:26px 0 40px; text-align:center; color:var(--ink-soft); font-size:.82rem;}
+  :focus-visible{outline:2px solid var(--amber); outline-offset:2px;}
+  @media(prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="brand">
+      <span class="code">MODULES 1&ndash;4</span>
+      <h1>Data Analytics &amp; Data Warehousing</h1>
+    </div>
+    <nav class="toc">
+      <a href="#dw">Data warehouse</a>
+      <a href="#olap">OLAP vs OLTP</a>
+      <a href="#tsql">T-SQL aggregation</a>
+      <a href="#mining">Data mining</a>
+      <a href="#quiz">Quiz</a>
+    </nav>
+  </div>
+  <div class="wrap sub-row"><p class="sub">Data Warehouse architecture, OLAP vs OLTP, T-SQL aggregation (ROLLUP / CUBE / PIVOT), and the Data Mining lifecycle.</p><button type="button" class="sticky-toggle" id="stickyToggle">📌 Sticky header: On</button></div>
+</header>
+
+<section id="dw">
+  <div class="wrap">
+    <div class="module-label">MODULE 1</div>
+    <h2 class="section-title">Data Analytics &amp; Data Warehouse Architecture</h2>
+    <div class="blueprint-box tick">
+      <p>A <strong>Data Warehouse (DW)</strong> is a single source of truth for Business Intelligence (BI) — a central repository built and optimized for <strong>analytical querying and retrieval</strong>, not for handling real-time, day-to-day transactions.</p>
+    </div>
+
+    <h3 style="font-family:var(--serif); color:var(--blue-deep); margin:26px 0 4px;">Core characteristics</h3>
+    <p class="section-lede" style="margin-bottom:10px;">Click each characteristic to see what it means in practice.</p>
+    <div class="flow" id="charFlow"></div>
+    <div class="flow-detail" id="charDetail">Click a characteristic above to see its definition.</div>
+
+    <h3 style="font-family:var(--serif); color:var(--blue-deep); margin:30px 0 4px;">Components &amp; infrastructure</h3>
+    <p class="section-lede" style="margin-bottom:10px;">Click a component to open its role in the warehouse.</p>
+    <div class="g-grid" id="componentGrid"></div>
+
+    <h3 style="font-family:var(--serif); color:var(--blue-deep); margin:30px 0 4px;">Star schema data modeling</h3>
+    <p class="section-lede" style="margin-bottom:6px;">A Fact table sits at the center, linked out to descriptive Dimension tables. Click a box to see its role.</p>
+    <div class="star-diagram">
+      <button type="button" class="star-fact" data-key="fact">Fact Table<br><span style="font-size:.75rem; font-weight:400; opacity:.85;">e.g., Sales</span></button>
+    </div>
+    <div class="star-dims" id="starDims"></div>
+    <div class="flow-detail" id="starDetail" style="margin-top:16px;">Click the Fact table or a Dimension table to see its role in the schema.</div>
+  </div>
+</section>
+
+<section class="alt" id="olap">
+  <div class="wrap">
+    <div class="module-label">MODULE 2</div>
+    <h2 class="section-title">OLAP vs. OLTP Systems</h2>
+    <p class="section-lede">Two very different jobs: running the business day-to-day, versus analyzing it after the fact.</p>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead><tr><th>System</th><th>What it's for</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><strong>OLTP</strong><br><span style="font-size:.78rem; color:var(--ink-soft);">Online Transaction Processing</span></td>
+              <td>Operational, day-to-day transaction management — fast, simple reads/writes on current data.</td>
+              <td>An ATM withdrawal</td></tr>
+          <tr><td><strong>OLAP</strong><br><span style="font-size:.78rem; color:var(--ink-soft);">Online Analytical Processing</span></td>
+              <td>Complex, multidimensional analysis of large volumes of historical data for decision-making.</td>
+              <td>A streaming service's recommendation engine</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-family:var(--serif); color:var(--blue-deep); margin:30px 0 10px;">ROLAP vs. MOLAP architectures</h3>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead><tr><th>Architecture</th><th>Storage</th><th>Dimensions</th><th>Best for</th></tr></thead>
+        <tbody>
+          <tr><td><strong>ROLAP</strong><br><span style="font-size:.78rem; color:var(--ink-soft);">Relational OLAP</span></td>
+              <td>Standard relational database, typically a Star Schema</td>
+              <td>Unlimited dimensions</td>
+              <td>Smaller datasets, or dimensions that change often</td></tr>
+          <tr><td><strong>MOLAP</strong><br><span style="font-size:.78rem; color:var(--ink-soft);">Multidimensional OLAP</span></td>
+              <td>Multidimensional database (MDBMS), pre-computed "cubes"</td>
+              <td>Predefined dimensions</td>
+              <td>Massive datasets needing faster execution</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="tsql">
+  <div class="wrap">
+    <div class="module-label">MODULE 3</div>
+    <h2 class="section-title">Advanced T-SQL Aggregation &amp; Cross-Tabulation</h2>
+    <p class="section-lede">Three ways to extend <code>GROUP BY</code> for richer analytical reporting.</p>
+
+    <div class="code-card">
+      <h3>ROLLUP — hierarchical aggregation</h3>
+      <p class="desc">Extends <code>GROUP BY</code> to generate subtotal and grand-total rows, following a defined hierarchy of the grouped columns (here, Region &rarr; City).</p>
+      <div class="code-panel">
+        <pre><code id="code-rollup">SELECT
+    Region,
+    City,
+    SUM(SalesAmount) AS TotalSales
+FROM Sales
+GROUP BY ROLLUP(Region, City);</code></pre>
+        <button type="button" class="copy-btn" data-target="code-rollup">Copy</button>
+      </div>
+      <p class="desc" style="margin-top:12px;">ROLLUP produces <code>NULL</code> in a column wherever it's showing a subtotal or grand total for that level. <code>COALESCE()</code> replaces those NULLs with a readable label:</p>
+      <div class="code-panel">
+        <pre><code id="code-rollup-coalesce">SELECT
+    COALESCE(Region, 'All Regions') AS Region,
+    COALESCE(City, 'All Cities') AS City,
+    SUM(SalesAmount) AS TotalSales
+FROM Sales
+GROUP BY ROLLUP(Region, City);</code></pre>
+        <button type="button" class="copy-btn" data-target="code-rollup-coalesce">Copy</button>
+      </div>
+    </div>
+
+    <div class="code-card">
+      <h3>CUBE — multi-dimensional aggregation</h3>
+      <p class="desc">Generates subtotals for <em>every possible combination</em> of the grouped columns — not just a hierarchy like ROLLUP, but every cross-section.</p>
+      <div class="code-panel">
+        <pre><code id="code-cube">SELECT
+    Region,
+    ProductCategory,
+    SUM(SalesAmount) AS TotalSales
+FROM Sales
+GROUP BY CUBE(Region, ProductCategory);</code></pre>
+        <button type="button" class="copy-btn" data-target="code-cube">Copy</button>
+      </div>
+    </div>
+
+    <div class="code-card">
+      <h3>PIVOT — cross-tabulation</h3>
+      <p class="desc">Rotates distinct row values into separate columns, turning long-format data into a cross-tabulation report.</p>
+      <div class="code-panel">
+        <pre><code id="code-pivot">SELECT ProductCategory, [2023], [2024], [2025]
+FROM
+(
+    SELECT ProductCategory, SalesYear, SalesAmount
+    FROM Sales
+) AS SourceTable
+PIVOT
+(
+    SUM(SalesAmount)
+    FOR SalesYear IN ([2023], [2024], [2025])
+) AS PivotTable;</code></pre>
+        <button type="button" class="copy-btn" data-target="code-pivot">Copy</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="mining">
+  <div class="wrap">
+    <div class="module-label">MODULE 4</div>
+    <h2 class="section-title">Data Mining &amp; Knowledge Discovery Lifecycle</h2>
+
+    <h3 style="font-family:var(--serif); color:var(--blue-deep); margin:0 0 4px;">The 6-stage lifecycle</h3>
+    <p class="section-lede" style="margin-bottom:10px;">Click each stage to see what happens at that point.</p>
+    <div class="flow" id="lifecycleFlow"></div>
+    <div class="flow-detail sage" id="lifecycleDetail">Click a stage above to see what it involves.</div>
+
+    <h3 style="font-family:var(--serif); color:var(--blue-deep); margin:30px 0 4px;">Techniques &amp; applications</h3>
+    <p class="section-lede" style="margin-bottom:10px;">Click a technique to open its definition and a typical use case.</p>
+    <div class="g-grid" id="techniqueGrid"></div>
+  </div>
+</section>
+
+<section id="quiz">
+  <div class="wrap">
+    <h2 class="section-title">Quiz: check your understanding</h2>
+    <p class="section-lede">Scenario-based questions covering all four modules.</p>
+    <div class="quiz-box" id="quizBox"></div>
+  </div>
+</section>
+
+<footer>Data Analytics, Data Warehousing, OLAP &amp; Data Mining — single-file interactive lesson.</footer>
+
+<script>
+(function(){
+"use strict";
+
+function esc(s){ return String(s).replace(/[&<>]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]; }); }
+
+/* ============================= DATA ============================= */
+
+var CHARACTERISTICS = [
+ {n:"1", t:"Subject-Oriented", text:"<b>Subject-Oriented:</b> The warehouse is organized around major functional areas of the business \u2014 such as sales, customers, or finance \u2014 rather than around the individual operational applications that generated the data."},
+ {n:"2", t:"Integrated", text:"<b>Integrated:</b> Data pulled from multiple, inconsistent source systems is standardized into a consistent format \u2014 naming conventions, encoding, and units of measurement are made uniform across departments before it lands in the warehouse."},
+ {n:"3", t:"Time-Variant", text:"<b>Time-Variant:</b> Data is captured and stored in a way that reflects specific points in time, so analysts can see historical flow and trends \u2014 not just a single current snapshot."},
+ {n:"4", t:"Non-Volatile", text:"<b>Non-Volatile:</b> Once data is loaded into the warehouse it's stable \u2014 it isn't updated or deleted the way operational data is. New data is appended over time, preserving a permanent historical record."}
+];
+
+var COMPONENTS = [
+ {name:"Data Warehouse Database", def:"An RDBMS-based databank that physically stores the integrated, historical data used for analysis and reporting."},
+ {name:"ETL (Extract, Transform, Load)", def:"The process that pulls data from source systems (Extract), cleans and reshapes it \u2014 handling missing data, aggregating values, converting names/formats (Transform) \u2014 then loads it into the warehouse (Load)."},
+ {name:"Metadata", def:"Data about the data. Technical Metadata describes structure (table schemas, source mappings) and is used by administrators and designers. Business Metadata describes meaning in business terms \u2014 what a field represents, how it's calculated \u2014 and is used by end-users."},
+ {name:"Access Tools & Data Marts", def:"Query and reporting tools, application development tools, and OLAP tools give users access to the warehouse. A Data Mart is a smaller, subject-specific subset of the warehouse, scoped to a single department or business area."}
+];
+
+var STAR = {
+ fact:{name:"Fact Table", def:"Holds the central, quantifiable measurements or metrics of a business process \u2014 such as sales amount or quantity sold \u2014 and links out to dimension tables through foreign keys."},
+ dims:[
+   {name:"Dimension: Product", def:"A descriptive attribute table that qualifies the facts \u2014 e.g., product name, category, brand \u2014 letting analysts filter and group sales by what was sold."},
+   {name:"Dimension: Customer", def:"A descriptive attribute table for who was involved \u2014 e.g., customer name, region, segment \u2014 letting analysts slice sales by who bought."},
+   {name:"Dimension: Date", def:"A descriptive attribute table for when \u2014 day, month, quarter, year \u2014 letting analysts slice sales by time period."},
+   {name:"Dimension: Store", def:"A descriptive attribute table for where \u2014 e.g., store location, region, channel \u2014 letting analysts slice sales by location."}
+ ]
+};
+
+var LIFECYCLE = [
+ {n:"1", t:"Business Understanding", text:"<b>Business Understanding:</b> Define the project's goals from a business perspective, and translate that goal into a data mining problem definition."},
+ {n:"2", t:"Data Understanding", text:"<b>Data Understanding:</b> Collect the initial data and get familiar with it \u2014 explore the data population, identify data quality issues, and detect interesting subsets worth digging into further."},
+ {n:"3", t:"Data Preparation", text:"<b>Data Preparation:</b> Clean the data and construct the final dataset \u2014 including new attributes \u2014 that will be fed into the modeling tools."},
+ {n:"4", t:"Modeling", text:"<b>Modeling:</b> Select and apply appropriate data mining techniques (such as decision trees), and calibrate their parameters to optimal values."},
+ {n:"5", t:"Evaluation", text:"<b>Evaluation:</b> Thoroughly evaluate the model and review the steps used to build it, to be certain it actually achieves the business objectives defined in stage 1."},
+ {n:"6", t:"Deployment", text:"<b>Deployment:</b> Put the model into use \u2014 this can range from generating a one-off report to implementing a repeatable data mining process across the organization, including ongoing monitoring and reporting."}
+];
+
+var TECHNIQUES = [
+ {name:"Classification", def:"Assigns items into predefined categories or classes based on their attributes \u2014 e.g., classifying an incoming email as spam or not spam."},
+ {name:"Clustering", def:"Groups similar data points together based on shared characteristics, without predefined categories \u2014 useful for discovering natural groupings, like customer segments."},
+ {name:"Regression", def:"Analyzes the relationship between variables to predict a continuous numeric value \u2014 e.g., forecasting sales based on advertising spend."},
+ {name:"Association Rules", def:"Discovers hidden relationships between variables in large datasets. The classic example is market-basket analysis \u2014 finding that customers who buy X also tend to buy Y."},
+ {name:"Outlier Detection", def:"Identifies data points that deviate significantly from the rest of the dataset \u2014 useful for spotting anomalies such as fraudulent transactions."},
+ {name:"Sequential Patterns", def:"Finds regular sequences or trends in data over time \u2014 such as the typical order in which a customer purchases related products."},
+ {name:"Prediction", def:"Uses historical and current data to estimate the value of an attribute in the future \u2014 such as forecasting next quarter's revenue."}
+];
+
+var QUIZ = [
+ {q:"A retail chain notices that once sales data is loaded into their warehouse each night, it's never edited or deleted \u2014 only new rows are appended. Which DW characteristic is this?",
+  choices:["Non-Volatile","Time-Variant","Subject-Oriented","Integrated"], correct:0,
+  explain:"Non-Volatile means that once data is loaded, it's stable \u2014 it isn't updated or deleted, only appended, preserving a permanent historical record."},
+ {q:"A company merges Sales, Marketing, and Finance data into one warehouse, standardizing naming conventions and units across all three departments. Which characteristic does this describe?",
+  choices:["Integrated","Non-Volatile","Time-Variant","Subject-Oriented"], correct:0,
+  explain:"Integrated means data from multiple, inconsistent source systems is standardized into a consistent format across departments."},
+ {q:"Which DW component is responsible for handling missing data, aggregating values, and converting names/formats as data moves from source systems into the warehouse?",
+  choices:["ETL (Extract, Transform, Load)","Metadata","Data Mart","Access Tools"], correct:0,
+  explain:"ETL is the process that extracts data from sources, transforms it (cleaning, aggregation, name conversion), and loads it into the warehouse."},
+ {q:"In a star schema, which table holds the quantifiable metrics (like sales amount) and links out to descriptive tables via foreign keys?",
+  choices:["Fact table","Dimension table","Data mart","Metadata table"], correct:0,
+  explain:"Fact tables hold the central measurements/metrics of a business process and connect to dimension tables through foreign keys."},
+ {q:"Withdrawing cash from an ATM is a classic example of which type of system?",
+  choices:["OLTP \u2014 fast, operational transaction processing","OLAP \u2014 multidimensional analytical processing","ROLAP \u2014 relational OLAP","MOLAP \u2014 multidimensional OLAP"], correct:0,
+  explain:"OLTP (Online Transaction Processing) handles day-to-day operational transactions like an ATM withdrawal \u2014 fast, simple, current-data operations."},
+ {q:"Which OLAP architecture stores data in a relational database (typically a Star Schema), supports unlimited dimensions, but can be slower on very large datasets?",
+  choices:["ROLAP","MOLAP","OLTP","ETL"], correct:0,
+  explain:"ROLAP (Relational OLAP) uses relational storage and a Star Schema with unlimited dimensions, best suited to smaller datasets."},
+ {q:"A report needs subtotal rows for each Region, plus a grand total \u2014 following the hierarchy Region \u2192 City. Which T-SQL clause fits, and what commonly needs to be handled alongside it?",
+  choices:["ROLLUP, with COALESCE() to relabel the NULLs it produces for subtotal rows","CUBE, with no NULL handling needed","PIVOT, with COALESCE() to relabel column headers","GROUP BY alone, since it already produces subtotals"], correct:0,
+  explain:"ROLLUP produces hierarchical subtotals and a grand total, using NULL to mark those rows \u2014 COALESCE() is the standard way to replace those NULLs with a readable label."},
+ {q:"A report needs subtotals for every possible combination of Region and ProductCategory \u2014 not just a Region \u2192 Category hierarchy. Which T-SQL clause fits?",
+  choices:["CUBE","ROLLUP","PIVOT","JOIN"], correct:0,
+  explain:"CUBE generates subtotals for every possible combination of the grouped columns, unlike ROLLUP which only follows one defined hierarchy."},
+ {q:"A report needs to turn a Sales table's SalesYear values (2023, 2024, 2025) into their own columns, with totals under each year. Which T-SQL operator does this?",
+  choices:["PIVOT","ROLLUP","CUBE","UNION"], correct:0,
+  explain:"PIVOT rotates row values into separate columns, producing exactly this kind of cross-tabulation report."},
+ {q:"A data mining project starts by meeting with business stakeholders to define what success looks like, before any data is touched. Which lifecycle stage is this?",
+  choices:["Business Understanding","Data Understanding","Modeling","Evaluation"], correct:0,
+  explain:"Business Understanding is the first stage: defining the project's goals from a business perspective and translating that into a data mining problem."},
+ {q:"An online store discovers that customers who buy phone cases also frequently buy screen protectors, even though no one told the system to look for that link. Which technique produced this insight?",
+  choices:["Association Rules","Classification","Regression","Sequential Patterns"], correct:0,
+  explain:"Association Rules discover hidden relationships between variables in large datasets \u2014 market-basket analysis (X bought with Y) is the classic example."}
+];
+
+/* ============================= FLOW HELPER ============================= */
+
+function buildFlow(containerId, detailId, items, detailKeyField, textField){
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = "";
+  items.forEach(function(step, idx){
+    var btn = document.createElement("button");
+    btn.className = "flow-step";
+    btn.type = "button";
+    btn.innerHTML = '<div class="n">' + esc(detailKeyField ? step[detailKeyField] : ("STEP " + step.n)) + '</div><div class="t">' + esc(step.t) + '</div>';
+    btn.addEventListener("click", function(){
+      var all = container.querySelectorAll(".flow-step");
+      for (var i=0;i<all.length;i++){ all[i].classList.remove("active"); }
+      btn.classList.add("active");
+      var detail = document.getElementById(detailId);
+      if (detail) detail.innerHTML = step[textField];
+    });
+    container.appendChild(btn);
+    if (idx < items.length - 1){
+      var arrow = document.createElement("div");
+      arrow.className = "flow-arrow";
+      arrow.textContent = "\u2192";
+      container.appendChild(arrow);
+    }
+  });
+}
+
+/* ============================= GLOSSARY GRID HELPER ============================= */
+
+function buildGrid(containerId, items){
+  var grid = document.getElementById(containerId);
+  if (!grid) return;
+  grid.innerHTML = "";
+  items.forEach(function(item){
+    var card = document.createElement("button");
+    card.type = "button";
+    card.className = "g-card";
+    card.innerHTML = '<h4>' + esc(item.name) + '</h4><span class="hint">Click to see definition</span><p>' + esc(item.def) + '</p>';
+    card.addEventListener("click", function(){ card.classList.toggle("open"); });
+    grid.appendChild(card);
+  });
+}
+
+/* ============================= STAR SCHEMA DIAGRAM ============================= */
+
+function renderStar(){
+  var dimsBox = document.getElementById("starDims");
+  var detail = document.getElementById("starDetail");
+  if (!dimsBox) return;
+  dimsBox.innerHTML = "";
+  STAR.dims.forEach(function(d){
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "star-dim";
+    btn.textContent = d.name;
+    btn.addEventListener("click", function(){
+      if (detail) detail.innerHTML = "<b>" + esc(d.name) + ":</b> " + esc(d.def);
+    });
+    dimsBox.appendChild(btn);
+  });
+  var factBtn = document.querySelector(".star-fact");
+  if (factBtn){
+    factBtn.addEventListener("click", function(){
+      if (detail) detail.innerHTML = "<b>" + esc(STAR.fact.name) + ":</b> " + esc(STAR.fact.def);
+    });
+  }
+}
+
+/* ============================= COPY BUTTONS ============================= */
+
+function fallbackCopy(text, btn){
+  var ta = document.createElement("textarea");
+  ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); btn.textContent = "Copied!"; setTimeout(function(){ btn.textContent = "Copy"; }, 1400); }
+  catch(e){ /* ignore */ }
+  document.body.removeChild(ta);
+}
+
+function bindCopyButtons(){
+  var buttons = document.querySelectorAll(".copy-btn");
+  for (var i=0;i<buttons.length;i++){
+    buttons[i].addEventListener("click", function(e){
+      var targetId = e.currentTarget.getAttribute("data-target");
+      var codeEl = document.getElementById(targetId);
+      if (!codeEl) return;
+      var text = codeEl.textContent;
+      var btn = e.currentTarget;
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(function(){
+          btn.textContent = "Copied!";
+          setTimeout(function(){ btn.textContent = "Copy"; }, 1400);
+        }).catch(function(){ fallbackCopy(text, btn); });
+      } else {
+        fallbackCopy(text, btn);
+      }
+    });
+  }
+}
+
+/* ============================= QUIZ ============================= */
+
+var quizState = { index:0, score:0, answered:false };
+
+function renderQuiz(){
+  var box = document.getElementById("quizBox");
+  if (!box) return;
+  if (quizState.index >= QUIZ.length){
+    box.innerHTML =
+      '<div class="quiz-score">' +
+        '<div class="big">' + quizState.score + ' / ' + QUIZ.length + '</div>' +
+        '<p>correct answers</p>' +
+        '<div class="buttons"><button type="button" id="tryAgainBtn">Try Again</button></div>' +
+      '</div>';
+    var tryAgain = document.getElementById("tryAgainBtn");
+    if (tryAgain) tryAgain.addEventListener("click", function(){ quizState = {index:0, score:0, answered:false}; renderQuiz(); });
+    return;
+  }
+  var q = QUIZ[quizState.index];
+  quizState.answered = false;
+  box.innerHTML =
+    '<div class="quiz-progress">Question ' + (quizState.index + 1) + ' of ' + QUIZ.length + ' &middot; Score ' + quizState.score + '</div>' +
+    '<div class="quiz-q">' + esc(q.q) + '</div>' +
+    '<div class="quiz-choices" id="quizChoices"></div>' +
+    '<div class="quiz-feedback" id="quizFeedback"></div>' +
+    '<div class="quiz-nav"><button type="button" id="quizNextBtn" disabled>Next</button></div>';
+
+  var choicesEl = document.getElementById("quizChoices");
+  q.choices.forEach(function(choiceText, idx){
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "quiz-choice";
+    btn.textContent = choiceText;
+    btn.addEventListener("click", function(){
+      if (quizState.answered) return;
+      quizState.answered = true;
+      var all = choicesEl.querySelectorAll(".quiz-choice");
+      for (var i=0;i<all.length;i++){ all[i].setAttribute("disabled","true"); }
+      var fb = document.getElementById("quizFeedback");
+      if (idx === q.correct){
+        quizState.score++;
+        btn.classList.add("correct");
+        if (fb){ fb.className = "quiz-feedback show"; fb.innerHTML = "<b>Correct.</b> " + esc(q.explain); }
+      } else {
+        btn.classList.add("wrong");
+        all[q.correct].classList.add("correct");
+        if (fb){ fb.className = "quiz-feedback show"; fb.innerHTML = "<b>Not quite.</b> " + esc(q.explain); }
+      }
+      var nextBtn = document.getElementById("quizNextBtn");
+      if (nextBtn) nextBtn.removeAttribute("disabled");
+    });
+    choicesEl.appendChild(btn);
+  });
+
+  var nextBtn = document.getElementById("quizNextBtn");
+  if (nextBtn){
+    nextBtn.addEventListener("click", function(){
+      quizState.index++;
+      renderQuiz();
+    });
+  }
+}
+
+/* ============================= INIT ============================= */
+
+function bindStickyToggle(){
+  var btn = document.getElementById("stickyToggle");
+  var header = document.querySelector("header.masthead");
+  if (!btn || !header) return;
+  btn.addEventListener("click", function(){
+    var unstuck = header.classList.toggle("unstuck");
+    btn.textContent = unstuck ? "\uD83D\uDCCC Sticky header: Off" : "\uD83D\uDCCC Sticky header: On";
+  });
+}
+
+function init(){
+  bindStickyToggle();
+  buildFlow("charFlow", "charDetail", CHARACTERISTICS, null, "text");
+  buildGrid("componentGrid", COMPONENTS);
+  renderStar();
+  buildFlow("lifecycleFlow", "lifecycleDetail", LIFECYCLE, null, "text");
+  buildGrid("techniqueGrid", TECHNIQUES);
+  bindCopyButtons();
+  renderQuiz();
+}
+
+if (document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}
+
+})();
+</script>
+</body>
+</html>
