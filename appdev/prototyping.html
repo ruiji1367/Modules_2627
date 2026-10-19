@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IT1814 – Prototyping and Quality Assurance</title>
+<style>
+:root{--bg:#f4f6f8;--ink:#14202b;--mut:#566574;--ac:#1d4ed8;--acl:#e6edff;--ok:#0f7a55;--okl:#e3f5ee;--bad:#b45309;--badl:#fdf0e0;--card:#fff;--bd:#d6dde5}
+*{box-sizing:border-box}html,body{margin:0;height:100%}
+body{font:clamp(15px,1.45vw,20px)/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+h1,h2,h3{font-family:"Iowan Old Style",Georgia,serif;line-height:1.15;margin:0 0 .4em;letter-spacing:-.01em}
+h1{font-size:clamp(30px,5vw,64px)}h2{font-size:clamp(25px,3.4vw,46px)}h3{font-size:clamp(17px,1.9vw,25px)}
+p{margin:.4em 0}.lead{font-size:clamp(16px,1.9vw,26px);color:var(--mut);max-width:44em}
+#deck{position:fixed;inset:0 0 54px 0}
+.slide{position:absolute;inset:0;padding:4vh 6vw;overflow:auto;display:none}
+.slide.on{display:block;animation:in .25s ease-out}@keyframes in{from{opacity:0}to{opacity:1}}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:2vw;margin-top:2vh}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4vw;margin-top:2vh}
+@media(max-width:820px){.g2,.g3{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:1em 1.2em}
+.take{border-left:5px solid var(--ac);background:var(--acl);padding:.7em 1em;margin-top:2vh;border-radius:0 8px 8px 0;font-weight:600}
+.hid{display:none!important}
+button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--ink);border-radius:8px;padding:.45em .9em}
+button:hover{border-color:var(--ac)}button:focus-visible,a:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.pri{background:var(--ac);color:#fff;border-color:var(--ac)}
+.ch{display:grid;gap:.6em;margin-top:1.5vh}.ch button{text-align:left}
+.ch button.ok{background:var(--okl);border-color:var(--ok)}.ch button.no{background:var(--badl);border-color:var(--bad)}
+.fb{min-height:1.6em;margin-top:.6em;font-weight:600}.fb.ok{color:var(--ok)}.fb.no{color:var(--bad)}
+.flow{display:flex;flex-wrap:wrap;gap:.5em;align-items:center;margin:2vh 0}
+.st{padding:.5em .9em;border:2px solid var(--bd);border-radius:8px;background:var(--card);transition:all .3s}
+.st.lit{border-color:var(--ac);background:var(--acl);font-weight:700}.st.dead{border-color:var(--bad);background:var(--badl);text-decoration:line-through}
+.ar{color:var(--mut)}
+.tabs{display:flex;flex-wrap:wrap;gap:.5em}.tabs button[aria-pressed=true]{background:var(--ac);color:#fff;border-color:var(--ac)}
+table{border-collapse:collapse;width:100%;background:var(--card)}td,th{border:1px solid var(--bd);padding:.5em .8em;text-align:left}th{background:var(--acl)}
+.comp{display:flex;flex-wrap:wrap;gap:.6em;margin:2vh 0}.comp div{padding:.7em 1em;border:2px solid var(--bd);border-radius:8px;background:var(--card);transition:all .35s}
+.comp div.hit{border-color:var(--bad);background:var(--badl);font-weight:700}
+.phone{width:min(300px,100%);margin:0 auto;border:3px solid var(--ink);border-radius:22px;padding:14px;background:#fff;min-height:360px;position:relative}
+.phone h4{margin:0 0 8px;font-size:1.1em}.row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd)}
+.toast{position:absolute;left:14px;right:14px;bottom:14px;background:var(--ok);color:#fff;padding:.5em;border-radius:8px;text-align:center}
+.tiny{font-size:.75em;color:#9aa4ae;background:none;border:0;padding:0;text-decoration:underline}
+.issue{display:block;width:100%;text-align:left;margin-top:.5em}
+.fid{border:2px solid var(--ink);padding:14px;width:min(320px,100%);margin:0 auto;transition:all .35s}
+.fid .it{display:flex;justify-content:space-between;align-items:center;padding:8px;margin:6px 0;transition:all .35s}
+.fid .bar{margin-top:10px;padding:10px;text-align:center}
+.f-paper{background:#fdfbf3;font-family:"Comic Sans MS","Bradley Hand",cursive;border-style:dashed;transform:rotate(-1deg)}
+.f-paper .it{border-bottom:2px dashed #888}.f-paper button,.f-paper .bar{border:2px dashed #555;background:none;color:#333;border-radius:2px}
+.f-wire{background:#fff;font-family:ui-monospace,Consolas,monospace;border-color:#888}.f-wire .it{background:#e5e5e5;border:1px solid #999}
+.f-wire button,.f-wire .bar{background:#bbb;border:1px solid #777;color:#333;border-radius:0}
+.f-hi{background:#fff;border-radius:18px;border-color:var(--bd);box-shadow:0 8px 24px rgba(20,32,43,.15)}
+.f-hi .it{background:var(--acl);border-radius:10px}.f-hi button,.f-hi .bar{background:var(--ac);color:#fff;border-color:var(--ac);border-radius:8px}
+.lane{padding:.8em;border:1px solid var(--bd);border-radius:10px;background:var(--card);margin-top:1vh}
+.qq{margin:1em 0}.score{font-size:2em;font-weight:700}
+#bar{position:fixed;left:0;right:0;bottom:0;height:54px;display:flex;gap:.5em;align-items:center;padding:0 1.5vw;background:#fff;border-top:1px solid var(--bd)}
+#prog{position:absolute;top:-3px;left:0;height:3px;background:var(--ac);transition:width .3s}
+#bar .sp{flex:1}#notes{position:fixed;right:1vw;bottom:62px;width:min(420px,92vw);max-height:45vh;overflow:auto;background:var(--ink);color:#fff;padding:1em;border-radius:10px;font-size:15px;z-index:5}
+#ov{position:fixed;inset:0;background:rgba(244,246,248,.97);z-index:9;padding:5vh 6vw;overflow:auto}
+#ov button{display:block;width:100%;text-align:left;margin:.3em 0}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+table{display:block;overflow-x:auto}
+.ph{margin:2vh 0 0;border:2px dashed var(--bd);border-radius:10px;min-height:110px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--mut);padding:1em;background:#fff;font-size:.9em}
+.ph img{max-width:100%;max-height:34vh;border-radius:8px}.ph small{display:block;font-size:.8em;margin-top:.3em}
+#tag{font-size:.8em;color:var(--mut)}
+@media(max-width:640px){.slide{padding:3vh 5vw 4vh}#bar{gap:.3em;padding:0 2vw}#bar button{padding:.4em .55em;font-size:.85em}#num{font-size:.85em}
+.flow{gap:.3em}.st{font-size:.85em;padding:.4em .6em}td,th{padding:.4em .5em}.take{padding:.6em .8em}.tabs button{flex:1 1 auto}#tag{display:none}}
+@media(max-height:480px){h1{font-size:26px}h2{font-size:22px}.lead{font-size:15px}.slide{padding:2vh 4vw}}
+</head>
+<body>
+<main id="deck">
+
+<section class="slide" data-t="Opening">
+<h1>It works. But is it good?</h1>
+<p class="lead">A campus food ordering app accepts orders successfully. Now look closer.</p>
+<div class="g2">
+<div class="card"><h3>What works</h3><p>Customers can place an order.</p></div>
+<div class="card"><h3>What students report</h3><div id="probs" class="hid"><p>Cannot find the checkout button.</p><p>Some orders are duplicated.</p><p>The app sometimes freezes.</p><p>Developers keep fixing the same problems.</p></div><button class="pri" data-show="probs">Reveal reports</button></div></div>
+<p class="take" style="font-size:1.2em">If the application technically works, is it high-quality software?</p>
+<button data-show="a1">Discussion: show suggested answer</button>
+<p id="a1" class="hid">Not necessarily. Working functions are only part of quality. Usability, reliability, and maintainability also matter.</p>
+</section>
+
+<section class="slide" data-t="Learning objectives">
+<h2>By the end, you can…</h2>
+<div class="g2"><div class="card"><ul><li>Explain software quality and SQA</li><li>Give reasons organizations prioritize quality</li><li>Explain how prototyping supports QA</li></ul></div>
+<div class="card"><ul><li>Tell throwaway from evolutionary prototyping</li><li>Tell low-fidelity from high-fidelity</li><li>Recognize paper prototypes and wireframes</li><li>Choose an approach for a situation</li></ul></div></div>
+</section>
+
+<section class="slide" data-t="Software quality">
+<h2>Software quality</h2>
+<p class="lead">Software quality is the degree to which a software product meets its gathered requirements.</p>
+<div class="g2"><div class="card"><h3>Application A</h3><p>Many features, but fails important requirements.</p></div><div class="card"><h3>Application B</h3><p>Fewer features, but correctly meets the agreed requirements.</p></div></div>
+<p>Which application better satisfies the stated requirements?</p>
+<div class="ch"><button data-fb="Not quite. More features do not mean more quality if key requirements fail.">A</button><button data-ok data-fb="Yes. B meets the agreed requirements.">B</button></div><div class="fb"></div>
+<p class="take">Quality also means fitness for intended use. Meeting an incomplete or incorrect set of requirements is not enough.</p>
+</section>
+
+<section class="slide" data-t="Software quality assurance">
+<h2>Software quality assurance (SQA)</h2>
+<p class="lead">Planned activities that give confidence that the development process is appropriate and produces software of suitable quality.</p>
+<div class="flow" id="sqa"><span class="st">Requirements</span><span class="ar">→</span><span class="st">Design</span><span class="ar">→</span><span class="st">Development</span><span class="ar">→</span><span class="st">Testing</span><span class="ar">→</span><span class="st">Release</span></div>
+<button class="pri" id="sqaBtn">Show QA activities in every stage</button>
+<table style="margin-top:2vh"><tr><th>Quality Assurance</th><td>Prevent problems through suitable processes.</td></tr><tr><th>Quality Control</th><td>Evaluate products and find defects.</td></tr><tr><th>Testing</th><td>One important quality-control activity.</td></tr></table>
+<p class="take">SQA is not just testing at the end.</p>
+</section>
+
+<section class="slide" data-t="Why organizations need SQA">
+<h2>Why organizations need SQA</h2>
+<div class="tabs" id="why"></div><div class="card" style="margin-top:2vh"><h3 id="wh"></h3><p id="wp"></p></div>
+</section>
+
+<section class="slide" data-t="Technical debt">
+<h2>Limiting technical debt</h2>
+<p class="lead">A requirement was misunderstood: “Students can reorder a past meal.” When do we fix it?</p>
+<div class="tabs" id="td"><button aria-pressed="true" data-m="0">Fix during design</button><button aria-pressed="false" data-m="1">Fix after implementation</button></div>
+<div class="comp" id="tdc"><div>Requirements</div><div>Design</div><div>Code</div><div>Database</div><div>Tests</div><div>Documentation</div></div>
+<p id="tdp"></p>
+<p class="take">Late changes tend to touch more connected parts. The exact effort varies by project.</p>
+</section>
+
+<section class="slide" data-t="Check: which SQA reason?">
+<h2>Quick check</h2>
+<p class="lead">The app stores student phone numbers without permission, and the university may face legal action. Which reason for SQA is most relevant?</p>
+<div class="ch"><button data-fb="Reputation matters here, but the main issue is breaking rules.">Reputation</button><button data-fb="Not the main issue in this case.">Limiting technical debt</button><button data-ok data-fb="Correct. Legal requirements like privacy rules must be met.">Legality</button><button data-fb="Certification is not what the scenario describes.">Software certification</button></div><div class="fb"></div>
+</section>
+
+<section class="slide" data-t="What is a prototype?">
+<h2>What is a prototype?</h2>
+<p class="lead">An early representation of a software product used to explore ideas, communicate design decisions, or evaluate functionality. It may lack complete business logic.</p>
+<table style="margin-top:2vh"><tr><th></th><th>Prototype</th><th>Finished application</th></tr>
+<tr><td>Purpose</td><td>Explore and get feedback</td><td>Serve real users</td></tr><tr><td>Completeness</td><td>Partial</td><td>Complete</td></tr><tr><td>Functionality</td><td>Simulated or limited</td><td>Fully working</td></tr><tr><td>Intended users</td><td>Team and test users</td><td>All end users</td></tr><tr><td>Refinement</td><td>Rough to moderate</td><td>Production quality</td></tr></table>
+</section>
+
+<section class="slide" data-t="Why prototype first?">
+<h2>Why prototype before building?</h2>
+<div class="g2"><div class="lane"><h3>Team 1</h3><p>Builds everything, then users say ordering is confusing.</p><div class="flow"><span class="st">Requirements</span><span class="ar">→</span><span class="st">Implementation</span><span class="ar">→</span><span class="st dead">Users confused</span></div></div>
+<div class="lane"><h3>Team 2</h3><p>Shows a prototype first.</p><div class="flow"><span class="st">Requirements</span><span class="ar">→</span><span class="st lit">Prototype</span><span class="ar">→</span><span class="st lit">Feedback</span><span class="ar">→</span><span class="st lit">Revision</span><span class="ar">→</span><span class="st">Implementation</span></div></div></div>
+<ul><li>Users evaluate design and behavior</li><li>Requirements and functionality become clearer</li><li>Design gaps appear before implementation</li><li>May reduce avoidable rework, cost, and time</li></ul>
+<p class="take">Prototyping may help, but it does not guarantee lower cost in every project.</p>
+</section>
+
+<section class="slide" data-t="Try the prototype">
+<h2>Try this prototype</h2>
+<p class="lead">Order a Chicken Adobo. Can you check out?</p>
+<div class="g2"><div><div class="tabs" id="dm"><button aria-pressed="true" data-m="bad">Confusing version</button><button aria-pressed="false" data-m="good">Improved version</button></div><div class="phone" id="ph"></div></div>
+<div><h3>Spot the problems</h3><div id="iss"></div><p class="fb" id="issfb"></p></div></div>
+</section>
+
+<section class="slide" data-t="Throwaway vs evolutionary">
+<h2>Two prototyping paradigms</h2>
+<div class="tabs" id="pp"><button class="pri" data-p="t">Throwaway</button><button data-p="e">Evolutionary</button></div>
+<div class="lane"><div class="flow" id="plane"></div><p id="ptxt"></p></div>
+<div class="g2"><div class="card"><h3>Use throwaway when</h3><ul><li>Requirements are unclear</li><li>Exploring early design ideas</li><li>Comparing interface options</li></ul></div><div class="card"><h3>Use evolutionary when</h3><ul><li>Requirements are reasonably understood</li><li>Iterative development is planned</li><li>The architecture can support refinement</li></ul></div></div>
+</section>
+
+<section class="slide" data-t="Scenario challenge">
+<h2>Scenario challenge</h2>
+<div class="g2"><div><div class="card"><h3>Scenario A</h3><p>A startup is unsure what customers want and must compare three interface ideas.</p></div>
+<div class="ch"><button data-ok data-fb="Correct. Compare ideas cheaply, then discard.">Throwaway</button><button data-fb="Not best. Requirements are unclear, so committing to evolve one is risky.">Evolutionary</button></div><div class="fb"></div></div>
+<div><div class="card"><h3>Scenario B</h3><p>A team understands core requirements and will improve a working app through repeated user feedback.</p></div>
+<div class="ch"><button data-fb="Not best. The team is improving a working app.">Throwaway</button><button data-ok data-fb="Correct. Refine it repeatedly, with proper engineering and testing.">Evolutionary</button></div><div class="fb"></div></div></div>
+</section>
+
+<section class="slide" data-t="Prototype fidelity">
+<h2>Prototype fidelity</h2>
+<p>How closely does the prototype represent the final product?</p>
+<div class="tabs" id="fd"><button aria-pressed="true" data-f="paper">Paper sketch</button><button aria-pressed="false" data-f="wire">Wireframe</button><button aria-pressed="false" data-f="hi">High-fidelity</button></div>
+<div class="g2"><div><div class="fid f-paper" id="fs"></div></div>
+<div><div class="card"><p><b>Testing:</b> <span id="f1"></span></p><p><b>Included:</b> <span id="f2"></span></p><p><b>Missing on purpose:</b> <span id="f3"></span></p><p><b>Useful feedback:</b> <span id="f4"></span></p></div>
+<p class="take">Fidelity and paradigm are separate. A throwaway prototype is not always low-fidelity.</p>
+<p style="font-size:.85em;color:var(--mut)">Handout tools: Balsamiq, Axure, MockFlow, Adobe XD. Figma is a newer example. Tool availability and terms can change.</p></div></div>
+</section>
+
+<section class="slide" data-t="Case study">
+<h2>Case study: campus food ordering</h2>
+<p class="lead">The university wants students to browse food, order, and view order status. The team is unsure about the best ordering flow. Decide: low or high fidelity? Throwaway or evolutionary? What do users evaluate first? What happens after feedback?</p>
+<button class="pri" data-show="cs">Reveal suggested approach</button>
+<div id="cs" class="hid card" style="margin-top:2vh"><ul><li>Start low-fidelity (paper or wireframe): the flow is the uncertainty.</li><li>Use throwaway prototyping to compare flows without committing.</li><li>Users first evaluate navigation and the ordering steps.</li><li>Revise using feedback, then move to higher fidelity and implementation.</li></ul><p>Other approaches can be valid if justified.</p></div>
+</section>
+
+<section class="slide" data-t="Final knowledge check">
+<h2>Final knowledge check</h2><div id="quiz"></div>
+</section>
+
+<section class="slide" data-t="Recap">
+<h2>Recap</h2>
+<div class="g3"><div class="card"><h3>Software quality</h3><p>Meets requirements and suits intended use.</p></div><div class="card"><h3>SQA</h3><p>Planned activities that build confidence in quality.</p></div><div class="card"><h3>Prototyping</h3><p>Explore and validate ideas early.</p></div>
+<div class="card"><h3>Throwaway vs evolutionary</h3><p>What happens to the prototype after evaluation?</p></div><div class="card"><h3>Low vs high fidelity</h3><p>How closely it represents the product.</p></div></div>
+<p class="take" style="font-size:1.2em">Would you rather discover a design problem before coding, or after the system is built?</p>
+<p>Early feedback is valuable, but prototyping does not replace proper testing.</p>
+</section>
+
+<section class="slide" data-t="References">
+<h2>References</h2>
+<ul><li>Babich (2017), Prototyping 101.</li><li>Bahr (2017), Prototyping of User Interfaces for Mobile Application.</li><li>Galin (2018), Software Quality: Concepts and Practice.</li><li>Walkinshaw (2017), Software Quality Assurance: Consistency in the Face of Complexity and Change.</li></ul>
+<p style="color:var(--mut)">Source: IT1814 — 05 Handout 1 | STI</p>
+</section>
+</main>
+
+<div id="notes" class="hid" aria-live="polite"></div>
+<div id="ov" class="hid"></div>
+<nav id="bar" aria-label="Presentation controls"><div id="prog"></div>
+<button id="prev" aria-label="Previous slide">◀</button><button id="next" class="pri" aria-label="Next slide">▶</button>
+<span id="num"></span><span class="sp"></span>
+<span id="tag"></span><button id="nb" title="Notes (N)">Notes</button><button id="hb" title="Overview (H)">Slides</button><button id="fb2" title="Fullscreen (F)">Full</button></nav>
+
+<script type="module">
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const TEACHER=false; // build step sets this: teacher.html = true, index.html (student) = false
+const slides=$$('.slide'); let cur=0;
+
+/* Navigation: show one slide at a time. Slides stay in the DOM (just hidden), so each
+   activity keeps its state when the instructor moves away and back. */
+function go(n){cur=Math.max(0,Math.min(slides.length-1,n));
+ slides.forEach((s,i)=>s.classList.toggle('on',i===cur));slides[cur].scrollTop=0;
+ $('#num').textContent=`${cur+1} / ${slides.length}`;$('#prog').style.width=((cur+1)/slides.length*100)+'%';
+ $('#notes').innerHTML='<b>Instructor notes</b><br>'+slides[cur].dataset.notes;history.replaceState(null,'','#'+(cur+1));}
+$('#prev').onclick=()=>go(cur-1);$('#next').onclick=()=>go(cur+1);
+$('#nb').onclick=()=>$('#notes').classList.toggle('hid');
+$('#fb2').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.();
+function overview(){const o=$('#ov');o.classList.toggle('hid');o.innerHTML='<h2>Slides</h2>';
+ slides.forEach((s,i)=>{const b=document.createElement('button');b.textContent=`${i+1}. ${s.dataset.t}`;b.onclick=()=>{o.classList.add('hid');go(i)};o.append(b)});}
+$('#hb').onclick=overview;
+/* Shortcuts are ignored while typing, and Space is ignored on focused buttons so it
+   still activates them instead of changing slides. */
+addEventListener('keydown',e=>{const t=e.target;if(/INPUT|TEXTAREA|SELECT/.test(t.tagName)||e.ctrlKey||e.metaKey||e.altKey)return;
+ if(e.key==='ArrowRight'||e.key==='PageDown'){go(cur+1)}else if(e.key==='ArrowLeft'||e.key==='PageUp'){go(cur-1)}
+ else if(e.key===' '&&!/BUTTON|A/.test(t.tagName)){e.preventDefault();go(cur+1)}
+ else if(TEACHER&&(e.key==='n'||e.key==='N'))$('#nb').click();else if(e.key==='f'||e.key==='F')$('#fb2').click();
+ else if(e.key==='h'||e.key==='H')overview();else if(e.key==='Escape')$('#ov').classList.add('hid');});
+
+/* Generic reveal buttons and single-answer choice groups. */
+document.addEventListener('click',e=>{
+ const r=e.target.closest('[data-show]');if(r){const el=document.getElementById(r.dataset.show);el.classList.toggle('hid');r.textContent=el.classList.contains('hid')?r.textContent:'Hide';return}
+ const c=e.target.closest('.ch button[data-fb]');if(c){const ok='ok' in c.dataset,g=c.parentElement,f=g.nextElementSibling;
+  $$('button',g).forEach(b=>b.className='');c.className=ok?'ok':'no';f.className='fb '+(ok?'ok':'no');f.textContent=c.dataset.fb}});
+
+function tabs(id,fn){const box=$('#'+id);box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+ $$('button',box).forEach(x=>x.setAttribute('aria-pressed',x===b));fn(b)})}
+
+/* SQA stages: light every stage to show assurance activities run throughout. */
+$('#sqaBtn').onclick=()=>$$('#sqa .st').forEach((s,i)=>setTimeout(()=>s.classList.add('lit'),i*250));
+
+/* Five reasons, each with a short real-world situation. */
+const WHY=[['Reputation','A food app crashes at lunch rush. Students post complaints and stop using it.'],
+['Limiting technical debt','Rushed shortcuts mean every new feature takes longer because old code is hard to change.'],
+['Software certification','A vendor needs proof its app meets a recognized standard before the university buys it.'],
+['Legality','An app that mishandles personal data can break privacy or contract requirements.'],
+['Ethical codes of practice','Developers hide a known payment bug. Professional codes expect honesty and care for users.']];
+const wb=$('#why');WHY.forEach((w,i)=>{const b=document.createElement('button');b.textContent=w[0];b.setAttribute('aria-pressed',i===0);b.onclick=()=>pick(i);wb.append(b)});
+function pick(i){$$('button',wb).forEach((b,j)=>b.setAttribute('aria-pressed',i===j));$('#wh').textContent=WHY[i][0];$('#wp').textContent=WHY[i][1]}pick(0);
+
+/* Technical debt: highlight the components touched by the same fix at two stages. */
+tabs('td',b=>{const m=+b.dataset.m,hit=m?[0,1,2,3,4,5]:[0,1];
+ $$('#tdc div').forEach((d,i)=>d.classList.toggle('hit',hit.includes(i)));
+ $('#tdp').textContent=m?'The misunderstanding is now built into code, the database, tests, and documentation. Each needs review and rework.':'Only the requirement and design documents need correcting. Nothing has been built on the mistake yet.'});
+$('#td button[data-m="0"]').click();
+
+/* Ordering prototype with an intentionally confusing mode and an improved mode. */
+let mode='bad',cart=0,toast=false;
+function phone(){const g=mode==='good',p=$('#ph');
+ p.innerHTML=`<h4>Campus Eats</h4>
+ <div class="row"><span>Chicken Adobo ₱70</span><button id="add" style="${g?'':'padding:2px 5px;font-size:.7em'}">${g?'Add to order':'+'}</button></div>
+ <div class="row"><span>Pancit Canton ₱60</span><button disabled>${g?'Add to order':'+'}</button></div>
+ <p>${g?`Order: ${cart} item(s)`:''}</p>
+ ${g?`<button class="pri" id="co" style="width:100%" ${cart?'':'disabled'}>Checkout</button>`:`<button style="width:100%;margin-top:20px" id="cont">Continue</button><br><button class="tiny" id="co">go</button>`}
+ ${g&&toast?'<div class="toast">Added to order</div>':''}<div id="msg" style="margin-top:8px"></div>`;
+ $('#add').onclick=()=>{cart++;toast=true;phone();setTimeout(()=>{toast=false;phone()},1200)};
+ $('#co').onclick=()=>{$('#msg').textContent=cart?(g?'Checkout opened.':'Opened, but would you have found it?'):'Add an item first.'};
+ if(!g)$('#cont').onclick=()=>{$('#msg').textContent='That took you back to the menu.'}}
+tabs('dm',b=>{mode=b.dataset.m;phone()});phone();
+const ISS=[['Checkout is a tiny gray link labeled “go”','Hidden primary action. Make it large and clearly labeled.'],['The “Continue” button is unclear','Vague labels mislead. Name the action, such as “Checkout”.'],['Nothing confirms an item was added','Users need feedback, such as a message and an item count.'],['The “+” buttons are tiny','Small targets are hard to tap. Use clear, larger buttons.']];
+ISS.forEach(x=>{const b=document.createElement('button');b.className='issue';b.textContent=x[0];b.onclick=()=>{$('#issfb').textContent=x[1]};$('#iss').append(b)});
+
+/* Paradigm animation: highlight each step in order, discarding (throwaway) or looping (evolutionary). */
+const PP={t:{s:['Idea','Prototype','Feedback','Discard prototype','Build actual system'],x:'After evaluation the prototype is thrown away and the real system is built fresh, using what was learned.'},
+e:{s:['Initial prototype','Test','Improve','Test','Improve','Final product'],x:'After each evaluation the same prototype is refined. It can become part of the final product, so it still needs sound engineering, testing, and maintainability.'}};
+let timers=[];function play(k){timers.forEach(clearTimeout);const d=PP[k];$('#plane').innerHTML=d.s.map((s,i)=>(i?'<span class="ar">→</span>':'')+`<span class="st">${s}</span>`).join('');$('#ptxt').textContent=d.x;
+ $$('#plane .st').forEach((s,i)=>timers.push(setTimeout(()=>s.classList.add(k==='t'&&s.textContent.startsWith('Discard')?'dead':'lit'),i*400)))}
+tabs('pp',b=>{$$('#pp button').forEach(x=>x.classList.toggle('pri',x===b));play(b.dataset.p)});play('t');
+
+/* Fidelity switcher: same screen, same data; only the CSS class and explanation change. */
+const FD={paper:['Basic structure and flow: can users find what they need?','Rough sketch of screen, items, order button.','Colors, real fonts, and real behavior.','Is the flow understandable? Is anything missing?'],
+wire:['Layout, hierarchy, and navigation.','Boxes, labels, and content placement.','Visual style, branding, and polish.','Is the layout clear? Is the order logical?'],
+hi:['Look, feel, and interaction realism.','Colors, spacing, realistic content and behavior.','Nothing core is missing, but backend logic may be simulated.','Is it appealing and easy to use? Are details right?']};
+function fid(k){$('#fs').className='fid f-'+k;$('#fs').innerHTML=`<b>Campus Eats</b><div class="it"><span>Chicken Adobo</span><button>Add</button></div><div class="it"><span>Pancit Canton</span><button>Add</button></div><div class="bar">View order</div>`;
+ [1,2,3,4].forEach(i=>$('#f'+i).textContent=FD[k][i-1])}
+tabs('fd',b=>fid(b.dataset.f));fid('paper');
+
+/* Quiz: scenario-based, instant feedback, final score, retry. */
+const Q=[['A team is unsure what students want in a food app and needs to compare several interface ideas quickly. Best approach?',['Throwaway prototyping with low-fidelity sketches','Build the full system first','Skip evaluation','Release to everyone immediately'],0,'Unclear requirements and idea comparison suit quick, disposable prototypes.'],
+['Which activity best shows SQA as more than testing at the end?',['Reviewing requirements before design begins','Fixing bugs after release','Only running final tests','Ignoring early feedback'],0,'SQA includes planned process activities throughout development.'],
+['A team will keep refining a working prototype over many feedback rounds. Which paradigm is this?',['Evolutionary','Throwaway','Paper-only','None'],0,'The prototype is repeatedly refined and may become the final product.'],
+['A designer draws boxes showing layout and navigation but no colors. What is this?',['A low-fidelity wireframe','A high-fidelity prototype','Production code','A test report'],0,'Wireframes show structure while leaving out visual detail.'],
+['Which statement is correct?',['Fidelity and paradigm are separate dimensions','Throwaway prototypes are always low-fidelity','Evolutionary prototypes are always high-fidelity','Prototyping replaces testing'],0,'You can combine paradigm and fidelity in different ways, and prototyping does not replace testing.']];
+let qi=0,sc=0;function quiz(){const q=$('#quiz');if(qi>=Q.length){q.innerHTML=`<p class="score">${sc} / ${Q.length}</p><button class="pri" id="rt">Retry</button>`;$('#rt').onclick=()=>{qi=0;sc=0;quiz()};return}
+ const [t,o,a,x]=Q[qi];const ord=o.map((s,i)=>[s,i]).sort((p,r)=>((p[1]*7+qi*3)%5)-((r[1]*7+qi*3)%5));
+ q.innerHTML=`<p><b>Question ${qi+1} of ${Q.length}</b></p><p class="lead">${t}</p><div class="ch" id="qc">${ord.map(([s,i])=>`<button data-i="${i}">${s}</button>`).join('')}</div><p class="fb" id="qf"></p><button id="qn" class="pri hid">${qi===Q.length-1?'See score':'Next question'}</button>`;
+ $('#qc').onclick=e=>{const b=e.target.closest('button');if(!b||$('#qn').offsetParent)return;const ok=+b.dataset.i===a;if(ok)sc++;
+  $$('#qc button').forEach(x=>{x.disabled=true;if(+x.dataset.i===a)x.className='ok'});if(!ok)b.className='no';
+  $('#qf').className='fb '+(ok?'ok':'no');$('#qf').textContent=(ok?'Correct. ':'Not quite. ')+x;$('#qn').classList.remove('hid')};
+ $('#qn').onclick=()=>{qi++;quiz()}}
+quiz();
+
+/* Image slots: drop a file with the listed name into /images and it replaces the placeholder.
+   Teacher copy always shows the suggestion; student copy shows a slot only once its image exists. */
+const IMG={'Opening':['opening-app-problems.jpg','Screenshot of a real campus or food app with a confusing checkout or error message'],
+'Software quality':['quality-requirements.jpg','Photo of a requirements checklist or sticky-note board from a class project'],
+'What is a prototype?':['prototype-vs-final.jpg','Paper sketch of an app screen beside the finished app'],
+'Why prototype first?':['user-testing.jpg','Photo of a student trying a paper or phone prototype'],
+'Throwaway vs evolutionary':['prototype-paradigms.jpg','Crumpled paper sketches (throwaway) vs a version-history screenshot (evolutionary)'],
+'Prototype fidelity':['fidelity-tools.jpg','Screenshot of a Balsamiq or Figma wireframe of a food ordering screen'],
+'Case study':['case-canteen.jpg','Photo of your campus canteen queue or menu board']};
+slides.forEach(s=>{const d=IMG[s.dataset.t];if(!d)return;const f=document.createElement('figure');f.className='ph';f.style.margin='2vh 0 0';
+ const ph=TEACHER?`<div>Image suggestion: ${d[1]}<small>Save as images/${d[0]}</small></div>`:'';f.innerHTML=ph;f.hidden=!TEACHER;s.append(f);
+ const im=new Image();im.alt=d[1];im.onload=()=>{f.innerHTML='';f.append(im);f.hidden=false;f.style.border='0'};im.src='images/'+d[0]});
+/* Swipe left/right to change slides on touch screens; ignore mostly-vertical drags so scrolling still works. */
+let tx=0,ty=0;const dk=$('#deck');dk.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+dk.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;
+ if(Math.abs(dx)>70&&Math.abs(dy)<45&&!e.target.closest('table'))go(cur+(dx<0?1:-1))});
+$('#tag').textContent=TEACHER?'Teacher copy':'';$('#nb').hidden=!TEACHER;if(TEACHER)document.title+=' (Teacher)';
+go((parseInt(location.hash.slice(1))||1)-1);
+</script>
+</body>
+</html>
