@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IT1811 – Streams: Handling Files</title>
+<style>
+:root{--bg:#f4f6f8;--ink:#14202b;--mut:#566574;--ac:#1d4ed8;--acl:#e6edff;--ok:#0f7a55;--okl:#e3f5ee;--bad:#b45309;--badl:#fdf0e0;--card:#fff;--bd:#d6dde5}
+*{box-sizing:border-box}html,body{margin:0;height:100%}
+body{font:clamp(15px,1.45vw,20px)/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+h1,h2,h3{font-family:"Iowan Old Style",Georgia,serif;line-height:1.15;margin:0 0 .4em;letter-spacing:-.01em}
+h1{font-size:clamp(30px,5vw,64px)}h2{font-size:clamp(25px,3.4vw,46px)}h3{font-size:clamp(17px,1.9vw,25px)}
+p{margin:.4em 0}.lead{font-size:clamp(16px,1.9vw,26px);color:var(--mut);max-width:44em}
+#deck{position:fixed;inset:0 0 54px 0}
+.slide{position:absolute;inset:0;padding:4vh 6vw;overflow:auto;display:none}
+.slide.on{display:block;animation:in .25s ease-out}@keyframes in{from{opacity:0}to{opacity:1}}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:2vw;margin-top:2vh}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4vw;margin-top:2vh}
+@media(max-width:820px){.g2,.g3{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:1em 1.2em}
+.take{border-left:5px solid var(--ac);background:var(--acl);padding:.7em 1em;margin-top:2vh;border-radius:0 8px 8px 0;font-weight:600}
+.hid{display:none!important}
+button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--ink);border-radius:8px;padding:.45em .9em}
+button:hover{border-color:var(--ac)}button:focus-visible,a:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.pri{background:var(--ac);color:#fff;border-color:var(--ac)}
+.ch{display:grid;gap:.6em;margin-top:1.5vh}.ch button{text-align:left}
+.ch button.ok{background:var(--okl);border-color:var(--ok)}.ch button.no{background:var(--badl);border-color:var(--bad)}
+.fb{min-height:1.6em;margin-top:.6em;font-weight:600}.fb.ok{color:var(--ok)}.fb.no{color:var(--bad)}
+.flow{display:flex;flex-wrap:wrap;gap:.5em;align-items:center;margin:2vh 0}
+.st{padding:.5em .9em;border:2px solid var(--bd);border-radius:8px;background:var(--card);transition:all .3s}
+.st.lit{border-color:var(--ac);background:var(--acl);font-weight:700}.st.dead{border-color:var(--bad);background:var(--badl);text-decoration:line-through}
+.ar{color:var(--mut)}
+.tabs{display:flex;flex-wrap:wrap;gap:.5em}.tabs button[aria-pressed=true]{background:var(--ac);color:#fff;border-color:var(--ac)}
+table{border-collapse:collapse;width:100%;background:var(--card)}td,th{border:1px solid var(--bd);padding:.5em .8em;text-align:left}th{background:var(--acl)}
+.comp{display:flex;flex-wrap:wrap;gap:.6em;margin:2vh 0}.comp div{padding:.7em 1em;border:2px solid var(--bd);border-radius:8px;background:var(--card);transition:all .35s}
+.comp div.hit{border-color:var(--bad);background:var(--badl);font-weight:700}
+.phone{width:min(300px,100%);margin:0 auto;border:3px solid var(--ink);border-radius:22px;padding:14px;background:#fff;min-height:360px;position:relative}
+.phone h4{margin:0 0 8px;font-size:1.1em}.row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd)}
+.toast{position:absolute;left:14px;right:14px;bottom:14px;background:var(--ok);color:#fff;padding:.5em;border-radius:8px;text-align:center}
+.tiny{font-size:.75em;color:#9aa4ae;background:none;border:0;padding:0;text-decoration:underline}
+.issue{display:block;width:100%;text-align:left;margin-top:.5em}
+.fid{border:2px solid var(--ink);padding:14px;width:min(320px,100%);margin:0 auto;transition:all .35s}
+.fid .it{display:flex;justify-content:space-between;align-items:center;padding:8px;margin:6px 0;transition:all .35s}
+.fid .bar{margin-top:10px;padding:10px;text-align:center}
+.f-paper{background:#fdfbf3;font-family:"Comic Sans MS","Bradley Hand",cursive;border-style:dashed;transform:rotate(-1deg)}
+.f-paper .it{border-bottom:2px dashed #888}.f-paper button,.f-paper .bar{border:2px dashed #555;background:none;color:#333;border-radius:2px}
+.f-wire{background:#fff;font-family:ui-monospace,Consolas,monospace;border-color:#888}.f-wire .it{background:#e5e5e5;border:1px solid #999}
+.f-wire button,.f-wire .bar{background:#bbb;border:1px solid #777;color:#333;border-radius:0}
+.f-hi{background:#fff;border-radius:18px;border-color:var(--bd);box-shadow:0 8px 24px rgba(20,32,43,.15)}
+.f-hi .it{background:var(--acl);border-radius:10px}.f-hi button,.f-hi .bar{background:var(--ac);color:#fff;border-color:var(--ac);border-radius:8px}
+.lane{padding:.8em;border:1px solid var(--bd);border-radius:10px;background:var(--card);margin-top:1vh}
+.qq{margin:1em 0}.score{font-size:2em;font-weight:700}
+#bar{position:fixed;left:0;right:0;bottom:0;height:54px;display:flex;gap:.5em;align-items:center;padding:0 1.5vw;background:#fff;border-top:1px solid var(--bd)}
+#prog{position:absolute;top:-3px;left:0;height:3px;background:var(--ac);transition:width .3s}
+#bar .sp{flex:1}#notes{position:fixed;right:1vw;bottom:62px;width:min(420px,92vw);max-height:45vh;overflow:auto;background:var(--ink);color:#fff;padding:1em;border-radius:10px;font-size:15px;z-index:5}
+#ov{position:fixed;inset:0;background:rgba(244,246,248,.97);z-index:9;padding:5vh 6vw;overflow:auto}
+#ov button{display:block;width:100%;text-align:left;margin:.3em 0}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+table{display:block;overflow-x:auto}
+.ph{margin:2vh 0 0;border:2px dashed var(--bd);border-radius:10px;min-height:110px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--mut);padding:1em;background:#fff;font-size:.9em}
+.ph img{max-width:100%;max-height:34vh;border-radius:8px}.ph small{display:block;font-size:.8em;margin-top:.3em}
+#tag{font-size:.8em;color:var(--mut)}
+@media(max-width:640px){.slide{padding:3vh 5vw 4vh}#bar{gap:.3em;padding:0 2vw}#bar button{padding:.4em .55em;font-size:.85em}#num{font-size:.85em}
+.flow{gap:.3em}.st{font-size:.85em;padding:.4em .6em}td,th{padding:.4em .5em}.take{padding:.6em .8em}.tabs button{flex:1 1 auto}#tag{display:none}}
+@media(max-height:480px){h1{font-size:26px}h2{font-size:22px}.lead{font-size:15px}.slide{padding:2vh 4vw}}
+.ph[hidden]{display:none}
+pre{background:#14202b;color:#e8eef5;padding:1em;border-radius:8px;overflow:auto;font-size:.8em}
+.cell{display:inline-block;min-width:2.1em;padding:.35em;border:1px solid var(--bd);text-align:center;font-family:ui-monospace,Consolas,monospace;margin:2px;background:#fff}.cell.p{background:var(--ac);color:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:.4em;margin-top:.6em}input{font:inherit;padding:.4em .6em;border:1px solid var(--bd);border-radius:8px;width:100%}
+
+</style>
+</head>
+<body>
+<main id="deck">
+<section class="slide" data-t="Opening">
+<h1>Where does your data go when the program closes?</h1>
+<p class="lead">A student builds a grade tracker in C#. After closing it, every grade is gone.</p>
+<button class="pri" data-show="a1">Discussion: reveal answer</button>
+<p id="a1" class="hid card">Variables live in memory and disappear when the program ends. To keep data, the program must write it to a file, and read it back later.</p></section>
+<section class="slide" data-t="What is a stream?">
+<h2>Streams</h2><p class="lead">A stream is a source that provides a sequence of bytes: a file, an I/O device, an interprocess pipe, or a TCP/IP socket.</p>
+<div class="g2"><div class="card"><h3>Output stream</h3><p>Where data is written: a file, printer, or remote server.</p></div><div class="card"><h3>Input stream</h3><p>Where data is read from and assigned to variables in the program.</p></div></div>
+<p class="take">In C#, add <code>using System.IO;</code>. All files are byte-oriented.</p></section>
+<section class="slide" data-t="FileStream and FileMode">
+<h2>FileStream and FileMode</h2><p>FileStream creates a byte-oriented stream attached to a file. FileMode says how to open it.</p>
+<div class="tabs" id="fm"><button aria-pressed="true" data-m="Create">Create</button><button aria-pressed="false" data-m="CreateNew">CreateNew</button><button aria-pressed="false" data-m="Open">Open</button><button aria-pressed="false" data-m="OpenOrCreate">OpenOrCreate</button><button aria-pressed="false" data-m="Truncate">Truncate</button></div>
+<div class="tabs" id="fx" style="margin-top:.5em"><button aria-pressed="true" data-e="1">File exists</button><button aria-pressed="false" data-e="0">File does not exist</button></div>
+<pre id="fcode"></pre><p class="take" id="fres"></p></section>
+<section class="slide" data-t="Bytes and FileStream methods">
+<h2>Everything is bytes</h2><p>Type text to see its bytes (UTF-8).</p><input id="bi" value="Hi C#" aria-label="Text to convert">
+<p><b>Bytes:</b> <span id="bo"></span></p><p id="bc"></p>
+<h3>FileStream methods</h3><div class="chipbox"><div class="chips"><button data-d="Reads one byte and returns it as an integer.">ReadByte()</button><button data-d="Reads a number of bytes into an array.">Read()</button><button data-d="Writes one byte to the file.">WriteByte()</button><button data-d="Writes an array of bytes to the file.">Write()</button><button data-d="Pushes data to the file right away.">Flush()</button><button data-d="Closes the file and releases system resources.">Close()</button></div><p class="cd fb">Tap a method.</p></div></section>
+<section class="slide" data-t="Seek and the file pointer">
+<h2>The file pointer and Seek</h2><p>Seek(long n, SeekOrigin location) moves the pointer so you can access a file randomly.</p><div id="d1"></div>
+<table><tr><td>CanRead / CanWrite</td><td>Can the stream be read or written?</td></tr><tr><td>CanSeek</td><td>Can the position be changed?</td></tr><tr><td>Position / Length</td><td>Current location and size of the stream.</td></tr><tr><td>ReadTimeout / WriteTimeout / CanTimeout</td><td>Time limits for reading or writing.</td></tr></table></section>
+<section class="slide" data-t="Character-based file I/O">
+<h2>Text files: wrap the FileStream</h2><p>StreamWriter and StreamReader convert between characters and bytes automatically.</p>
+<div class="tabs" id="wr"><button aria-pressed="true" data-p="w">Writing</button><button aria-pressed="false" data-p="r">Reading</button></div>
+<div class="lane"><div class="flow" id="wf"></div></div></section>
+<section class="slide" data-t="StreamWriter and StreamReader">
+<h2>StreamWriter and StreamReader</h2>
+<div class="g2"><div class="card"><h3>StreamWriter</h3><p>StreamWriter(Stream) or StreamWriter(string fileName)</p><div class="chipbox"><div class="chips"><button data-d="Writes text to the file.">Write()</button><button data-d="Writes text, then starts a new line.">WriteLine()</button><button data-d="Pushes buffered text to the file now.">Flush()</button><button data-d="Closes the file.">Close()</button></div><p class="cd fb">Tap a method.</p></div></div><div class="card"><h3>StreamReader</h3><p>StreamReader(Stream) or StreamReader(string fileName)</p><div class="chipbox"><div class="chips"><button data-d="Reads the next character.">Read()</button><button data-d="Reads one line.">ReadLine()</button><button data-d="Reads from the current position to the end.">ReadToEnd()</button><button data-d="Looks at the next character without moving the pointer.">Peek()</button><button data-d="Closes the file.">Close()</button></div><p class="cd fb">Tap a method.</p></div></div></div>
+<pre>using (StreamWriter w = new StreamWriter("grades.txt"))
+    w.WriteLine("Ana, 95");
+using (StreamReader r = new StreamReader("grades.txt"))
+    Console.WriteLine(r.ReadLine());</pre><p class="take">Always close the file. A using block does this for you.</p></section>
+<section class="slide" data-t="Try the reader">
+<h2>Try the reader</h2><p>The file contains three lines. Predict the result before you click.</p><div id="d2"></div></section>
+<section class="slide" data-t="Choose the right tool">
+<h2>Choose the right tool</h2><div class="g2"><div><div class="card"><p>Scenario 1: Read a text file one line at a time.</p></div>
+<div class="ch"><button data-ok data-fb="Correct. StreamReader.ReadLine reads text line by line.">StreamReader.ReadLine()</button><button data-fb="Not best. ReadByte returns raw bytes, not lines.">FileStream.ReadByte()</button></div><div class="fb"></div></div>
+<div><div class="card"><p>Scenario 2: Jump straight to byte 500 of a large file.</p></div>
+<div class="ch"><button data-fb="Not best. That reads everything from the pointer.">StreamReader.ReadToEnd()</button><button data-ok data-fb="Correct. Seek moves the pointer directly.">FileStream.Seek()</button></div><div class="fb"></div></div></div></section>
+<section class="slide" data-t="Knowledge check"><h2>Knowledge check</h2><div id="quiz"></div></section>
+<section class="slide" data-t="Recap"><h2>Recap</h2>
+<div class="g3"><div class="card"><h3>Streams</h3><p>Sequences of bytes: input or output.</p></div><div class="card"><h3>FileStream</h3><p>Byte-level access. FileMode controls opening, Seek moves the pointer.</p></div><div class="card"><h3>StreamWriter / StreamReader</h3><p>Character-level text I/O on top of a stream.</p></div></div>
+<p class="take">Open the right way, move the pointer deliberately, and always close the file.</p></section>
+<section class="slide" data-t="References"><h2>References</h2><ul><li>Deitel, P. &amp; Deitel, H. (2015). Visual C# 2012 how to program (5th ed.). Pearson Education.</li><li>Gaddis, T. (2016). Starting out with visual C# (4th ed.). Pearson Education.</li><li>Harwani, B. (2015). Learning object-oriented programming in C# 5.0. Cengage Learning PTR.</li><li>Miles, R. (2016). Begin to code with C#. Microsoft Press.</li><li>Doyle, B. (2015). C# programming: from problem analysis to program design (5th ed.). Cengage Learning.</li></ul><p style="color:var(--mut)">Source: IT1811 handout, Streams: Handling Files</p></section>
+</main>
+
+<div id="notes" class="hid" aria-live="polite"></div>
+<div id="ov" class="hid"></div>
+<nav id="bar" aria-label="Presentation controls"><div id="prog"></div>
+<button id="prev" aria-label="Previous slide">◀</button><button id="next" class="pri" aria-label="Next slide">▶</button>
+<span id="num"></span><span class="sp"></span>
+<span id="tag"></span><button id="nb" title="Notes (N)">Notes</button><button id="hb" title="Overview (H)">Slides</button><button id="fb2" title="Fullscreen (F)">Full</button></nav>
+
+<script type="module">
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const TEACHER=false; // build step sets this: teacher.html = true, index.html (student) = false
+const slides=$$('.slide'); let cur=0;
+
+/* Navigation: show one slide at a time. Slides stay in the DOM (just hidden), so each
+   activity keeps its state when the instructor moves away and back. */
+function go(n){cur=Math.max(0,Math.min(slides.length-1,n));
+ slides.forEach((s,i)=>s.classList.toggle('on',i===cur));slides[cur].scrollTop=0;
+ $('#num').textContent=`${cur+1} / ${slides.length}`;$('#prog').style.width=((cur+1)/slides.length*100)+'%';
+ $('#notes').innerHTML='<b>Instructor notes</b><br>'+slides[cur].dataset.notes;history.replaceState(null,'','#'+(cur+1));}
+$('#prev').onclick=()=>go(cur-1);$('#next').onclick=()=>go(cur+1);
+$('#nb').onclick=()=>$('#notes').classList.toggle('hid');
+$('#fb2').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.();
+function overview(){const o=$('#ov');o.classList.toggle('hid');o.innerHTML='<h2>Slides</h2>';
+ slides.forEach((s,i)=>{const b=document.createElement('button');b.textContent=`${i+1}. ${s.dataset.t}`;b.onclick=()=>{o.classList.add('hid');go(i)};o.append(b)});}
+$('#hb').onclick=overview;
+/* Shortcuts are ignored while typing, and Space is ignored on focused buttons so it
+   still activates them instead of changing slides. */
+addEventListener('keydown',e=>{const t=e.target;if(/INPUT|TEXTAREA|SELECT/.test(t.tagName)||e.ctrlKey||e.metaKey||e.altKey)return;
+ if(e.key==='ArrowRight'||e.key==='PageDown'){go(cur+1)}else if(e.key==='ArrowLeft'||e.key==='PageUp'){go(cur-1)}
+ else if(e.key===' '&&!/BUTTON|A/.test(t.tagName)){e.preventDefault();go(cur+1)}
+ else if(TEACHER&&(e.key==='n'||e.key==='N'))$('#nb').click();else if(e.key==='f'||e.key==='F')$('#fb2').click();
+ else if(e.key==='h'||e.key==='H')overview();else if(e.key==='Escape')$('#ov').classList.add('hid');});
+
+/* Generic reveal buttons and single-answer choice groups. */
+document.addEventListener('click',e=>{
+ const r=e.target.closest('[data-show]');if(r){const el=document.getElementById(r.dataset.show);el.classList.toggle('hid');r.textContent=el.classList.contains('hid')?r.textContent:'Hide';return}
+ const c=e.target.closest('.ch button[data-fb]');if(c){const ok='ok' in c.dataset,g=c.parentElement,f=g.nextElementSibling;
+  $$('button',g).forEach(b=>b.className='');c.className=ok?'ok':'no';f.className='fb '+(ok?'ok':'no');f.textContent=c.dataset.fb}});
+
+function tabs(id,fn){const box=$('#'+id);box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+ $$('button',box).forEach(x=>x.setAttribute('aria-pressed',x===b));fn(b)})}
+
+/* Chips: show the explanation for a tapped method in the same box. */
+document.addEventListener('click',e=>{const b=e.target.closest('.chips button');if(b)$('.cd',b.closest('.chipbox')).textContent=b.textContent+' '+b.dataset.d});
+/* FileMode: result depends on both the mode and whether the file already exists. */
+const FM={Create:['Existing file is overwritten.','New file is created.'],CreateNew:['Error: the file already exists (IOException).','New file is created.'],Open:['File is opened.','Error: file not found (FileNotFoundException).'],OpenOrCreate:['File is opened.','New file is created.'],Truncate:['File is opened and its old content is erased.','Error: file not found (FileNotFoundException).']};
+let fmM='Create',fmE=1;function fm(){$('#fcode').textContent=`FileStream fs = new FileStream("orders.txt", FileMode.${fmM});`;$('#fres').textContent=FM[fmM][fmE?0:1]}
+tabs('fm',b=>{fmM=b.dataset.m;fm()});tabs('fx',b=>{fmE=+b.dataset.e;fm()});fm();
+/* Bytes: TextEncoder shows the real UTF-8 bytes, so symbols can use more than one byte. */
+$('#bi').oninput=()=>{const v=$('#bi').value,b=[...new TextEncoder().encode(v)];$('#bo').textContent=b.join(' ')||'(empty)';$('#bc').textContent=`${[...v].length} characters, ${b.length} bytes.`};$('#bi').oninput();
+/* Cursor demo: one text, one pointer. Each action reads or moves the pointer and reports what happened. */
+function cursor(id,text,acts){const el=$('#'+id);let pos=0;el.innerHTML='<div class="cells"></div><div class="flow acts"></div><p class="fb"><b>Pointer:</b> <span class="ps"></span> &nbsp; <b>Result:</b> <span class="rs">none yet</span></p>';
+ const draw=m=>{$('.cells',el).innerHTML=[...text].map((c,i)=>`<span class="cell${i===pos?' p':''}">${c==='\n'?'↵':c}</span>`).join('')+`<span class="cell${pos>=text.length?' p':''}">EOF</span>`;$('.ps',el).textContent=pos;if(m!=null)$('.rs',el).textContent=m};
+ const st={text,get:()=>pos,set:v=>pos=Math.max(0,Math.min(text.length,v))};
+ [...acts,['Reset',x=>{x.set(0);return 'pointer back at 0'}]].forEach(([l,f])=>{const b=document.createElement('button');b.textContent=l;b.onclick=()=>draw(f(st));$('.acts',el).append(b)});draw()}
+cursor('d1','HELLO C#',[['ReadByte()',s=>{const p=s.get();if(p>=s.text.length)return '-1 (end of file)';s.set(p+1);return `'${s.text[p]}' = byte ${s.text.charCodeAt(p)}`}],['Seek(0, Begin)',s=>{s.set(0);return 'moved to the start'}],['Seek(3, Current)',s=>{s.set(s.get()+3);return 'moved forward 3'}],['Seek(-2, End)',s=>{s.set(s.text.length-2);return 'moved to 2 before the end'}]]);
+cursor('d2','Ana\nBen\nCy',[['Read()',s=>{const p=s.get();if(p>=s.text.length)return '-1 (end)';s.set(p+1);return `'${s.text[p]==='\n'?'newline':s.text[p]}'`}],['ReadLine()',s=>{const p=s.get();if(p>=s.text.length)return 'null (end)';let i=s.text.indexOf('\n',p);if(i<0)i=s.text.length;s.set(i+1);return `"${s.text.slice(p,i)}"`}],['ReadToEnd()',s=>{const r=s.text.slice(s.get());s.set(s.text.length);return `"${r.replace(/\n/g,' / ')}"`}],['Peek()',s=>{const p=s.get();return p>=s.text.length?'-1 (end)':`'${s.text[p]==='\n'?'newline':s.text[p]}' (pointer not moved)`}]]);
+/* Writer/reader path: steps light up in order, reversed for reading. */
+const WP={w:['Program text','StreamWriter (chars to bytes)','FileStream','File'],r:['File','FileStream','StreamReader (bytes to chars)','Program text']};let wt=[];
+function wr(k){wt.forEach(clearTimeout);$('#wf').innerHTML=WP[k].map((x,i)=>(i?'<span class="ar">→</span>':'')+`<span class="st">${x}</span>`).join('');$$('#wf .st').forEach((x,i)=>wt.push(setTimeout(()=>x.classList.add('lit'),i*400)))}
+tabs('wr',b=>wr(b.dataset.p));wr('w');
+const Q=[['Which FileMode creates a new save file but fails if one already exists?',['CreateNew','Create','Open','Truncate'],0,'CreateNew refuses to overwrite an existing file.'],['You need to read a text file line by line. Best choice?',['StreamReader.ReadLine()','FileStream.ReadByte()','StreamWriter.WriteLine()','FileStream.Flush()'],0,'ReadLine returns one line of text at a time.'],['A program must jump directly to byte 500 of a large file. Which call?',['Seek(500, SeekOrigin.Begin)','ReadToEnd()','Flush()','Close()'],0,'Seek moves the file pointer to a chosen position.'],['Why wrap a FileStream in a StreamWriter?',['It converts characters to bytes for you','It makes the file read-only','It removes the need to close the file','It encrypts the file'],0,'StreamWriter handles the character-to-byte conversion for text.'],['What does Peek() do on a StreamReader?',['Returns the next value without moving the pointer','Reads and removes the next line','Closes the stream','Moves to the end'],0,'Peek only looks ahead; the pointer stays where it is.']];
+let qi=0,sc=0;function quiz(){const q=$('#quiz');if(qi>=Q.length){q.innerHTML=`<p class="score">${sc} / ${Q.length}</p><button class="pri" id="rt">Retry</button>`;$('#rt').onclick=()=>{qi=0;sc=0;quiz()};return}
+ const [t,o,a,x]=Q[qi];const ord=o.map((s,i)=>[s,i]).sort((p,r)=>((p[1]*7+qi*3)%5)-((r[1]*7+qi*3)%5));
+ q.innerHTML=`<p><b>Question ${qi+1} of ${Q.length}</b></p><p class="lead">${t}</p><div class="ch" id="qc">${ord.map(([s,i])=>`<button data-i="${i}">${s}</button>`).join('')}</div><p class="fb" id="qf"></p><button id="qn" class="pri hid">${qi===Q.length-1?'See score':'Next question'}</button>`;
+ $('#qc').onclick=e=>{const b=e.target.closest('button');if(!b||$('#qn').offsetParent)return;const ok=+b.dataset.i===a;if(ok)sc++;
+  $$('#qc button').forEach(x=>{x.disabled=true;if(+x.dataset.i===a)x.className='ok'});if(!ok)b.className='no';
+  $('#qf').className='fb '+(ok?'ok':'no');$('#qf').textContent=(ok?'Correct. ':'Not quite. ')+x;$('#qn').classList.remove('hid')};
+ $('#qn').onclick=()=>{qi++;quiz()}}
+quiz();
+
+/* Image slots: drop a file with the listed name into /images and it replaces the placeholder.
+   Teacher copy always shows the suggestion; student copy shows a slot only once its image exists. */
+const IMG={'Opening':['game-save-screen.jpg','Screenshot of a game save or load screen'],'What is a stream?':['stream-analogy.jpg','Photo of a water pipe or conveyor belt'],'Seek and the file pointer':['bookmark-cursor.jpg','Photo of a bookmark in a book or a text cursor'],'Character-based file I/O':['notepad-file.jpg','Screenshot of a .txt file opened in Notepad']};
+slides.forEach(s=>{const d=IMG[s.dataset.t];if(!d)return;const f=document.createElement('figure');f.className='ph';f.style.margin='2vh 0 0';
+ const ph=TEACHER?`<div>Image suggestion: ${d[1]}<small>Save as images/${d[0]}</small></div>`:'';f.innerHTML=ph;f.hidden=!TEACHER;s.append(f);
+ const im=new Image();im.alt=d[1];im.onload=()=>{f.innerHTML='';f.append(im);f.hidden=false;f.style.border='0'};im.src='images/'+d[0]});
+/* Swipe left/right to change slides on touch screens; ignore mostly-vertical drags so scrolling still works. */
+let tx=0,ty=0;const dk=$('#deck');dk.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+dk.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;
+ if(Math.abs(dx)>70&&Math.abs(dy)<45&&!e.target.closest('table'))go(cur+(dx<0?1:-1))});
+$('#tag').textContent=TEACHER?'Teacher copy':'';$('#nb').hidden=!TEACHER;if(TEACHER)document.title+=' (Teacher)';
+go((parseInt(location.hash.slice(1))||1)-1);
+</script>
+</body>
+</html>
