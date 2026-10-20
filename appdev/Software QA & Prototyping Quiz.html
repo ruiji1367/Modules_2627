@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Software QA &amp; Prototyping Quiz</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--text:#1d2433;--muted:#5d6678;--line:#dfe3ec;--accent:#4f46e5;--accent-t:#fff;--ok:#15803d;--okbg:#dcfce7;--bad:#b91c1c;--badbg:#fee2e2;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111522;--card:#1b2133;--text:#e8ebf4;--muted:#9aa3b8;--line:#2d3550;--accent:#818cf8;--accent-t:#111522;--ok:#4ade80;--okbg:#12301f;--bad:#f87171;--badbg:#3a1a1d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#111522;--card:#1b2133;--text:#e8ebf4;--muted:#9aa3b8;--line:#2d3550;--accent:#818cf8;--accent-t:#111522;--ok:#4ade80;--okbg:#12301f;--bad:#f87171;--badbg:#3a1a1d;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:680px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.15rem;margin:0 0 4px}
+.sub{color:var(--muted);font-size:.9rem;margin:0 0 14px}
+.modes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.modes button{flex:1;min-width:140px}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px 14px}
+button:hover:not(:disabled){border-color:var(--accent)}
+button.on{background:var(--accent);color:var(--accent-t);border-color:var(--accent);font-weight:600}
+.bar{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:8px}
+.bar>i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:.85rem;margin-bottom:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
+.q{font-size:1.05rem;line-height:1.5;margin:0 0 16px}
+.opt{display:flex;gap:10px;width:100%;text-align:left;margin-bottom:10px;align-items:flex-start;line-height:1.4}
+.opt b{min-width:1.4em;color:var(--accent)}
+.opt.ok{background:var(--okbg);border-color:var(--ok)}
+.opt.bad{background:var(--badbg);border-color:var(--bad)}
+.opt:disabled{cursor:default}
+.exp{margin-top:6px;padding:12px;border-radius:10px;background:var(--bg);font-size:.92rem;line-height:1.5;color:var(--muted)}
+.exp strong{color:var(--text)}
+.nav{display:flex;justify-content:flex-end;margin-top:16px}
+.hide{display:none}
+.score{font-size:2.4rem;font-weight:700;text-align:center;margin:8px 0}
+.center{text-align:center;color:var(--muted)}
+.rev{margin:14px 0 0;padding:0;list-style:none;font-size:.9rem}
+.rev li{padding:8px 0;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<main>
+  <h1>Software QA &amp; Prototyping Quiz</h1>
+  <p class="sub">10 questions · one per slide</p>
+  <div class="modes">
+    <button id="mOrder" class="on">In order (1–10)</button>
+    <button id="mRand">Randomize</button>
+  </div>
+  <div class="bar"><i id="fill"></i></div>
+  <div class="meta"><span id="pos"></span><span id="sc"></span></div>
+  <div class="card" id="quiz">
+    <p class="q" id="qt"></p>
+    <div id="opts"></div>
+    <div class="exp hide" id="exp"></div>
+    <div class="nav"><button id="next" class="on hide"></button></div>
+  </div>
+  <div class="card hide" id="done">
+    <div class="center">Quiz complete</div>
+    <div class="score" id="final"></div>
+    <div class="center" id="msg"></div>
+    <ul class="rev" id="rev"></ul>
+    <div class="nav"><button id="again" class="on">Try again</button></div>
+  </div>
+</main>
+<script>
+var Q=[
+{q:"A newly launched mobile payment app suffers a critical bug during a peak shopping day, causing payment failures for thousands of users. The company experiences immediate loss of user trust and negative public feedback. Which key driver of software quality assurance is best illustrated?",o:["Software Certification","Reputation","Legality","Limiting Technical Debt"],a:1,e:"Reputation: software bugs can have an immediate negative impact on clients or customers."},
+{q:"A development team skips testing routines to push a system to market quickly. Over the following year, minor fixes require extensive code overhauls, causing maintenance costs to skyrocket. Which driver addresses these long-term maintenance costs?",o:["Limiting Technical Debt","Software Certification","Ethical Codes of Practice","Low-Fidelity Prototyping"],a:0,e:"Limiting Technical Debt: poor quality software leads to expensive long-term development and maintenance costs."},
+{q:"A medical software vendor is preparing to deploy diagnostic software to clinical facilities. Before deployment, the vendor must submit formal documentation proving that rigorous quality control measures were applied. Which driver requires this proof of compliance?",o:["Ethical Codes of Practice","Software Certification","Throwaway Prototyping","Reputation"],a:1,e:"Software Certification: it demands evidence of quality control and assessment measures."},
+{q:"An enterprise platform collects customer personal data. To comply with national data privacy statutes, the organization implements strict quality audits to demonstrate that the software does not pose a security risk to its users. Which driver is being satisfied?",o:["Legality","Technical Debt","Wireframing","Reputation"],a:0,e:"Legality: legal obligations mandate that every practicable measure be taken to show the software poses no risk to users."},
+{q:"A software engineer is building a free community utility tool that is neither regulated by legislation nor subject to mandatory certifications. Despite no legal enforcement, the developer works diligently to eliminate harmful bugs out of a personal moral duty to protect users. Which driver is guiding the developer?",o:["Software Certification","Legality","Ethical Codes of Practice","Limiting Technical Debt"],a:2,e:"Ethical Codes of Practice: where software isn’t covered by certification or legislation, developers still have a moral obligation to maximize quality and prevent harmful bugs."},
+{q:"A team is in the early design phase where client requirements remain vague and unclear. They build a quick visual mockup to gather user insights, intending to discard the model entirely after receiving feedback. Which prototyping paradigm should they select?",o:["Evolutionary Prototyping","Throwaway Prototyping","High-Fidelity IDE Prototyping","Software Certification"],a:1,e:"Throwaway Prototyping: a fast paradigm for early design stages when requirements are unclear; it generates insights and is then discarded."},
+{q:"In a late development stage where core technical decisions are established, a team creates a working model. They refine and modify this same prototype across consecutive test cycles until it becomes the final production software. Which paradigm is this?",o:["Throwaway Prototyping","Paper-Based Prototyping","Evolutionary Prototyping","Wireframe Discarding"],a:2,e:"Evolutionary Prototyping: the prototype is modified according to test results and reused across cycles until it evolves into the end product."},
+{q:"During an initial design workshop, a UI designer sketches interface screens using paper and pencil to rapidly explore layouts and gather instant feedback without using software tools. Which technique is this?",o:["High-Fidelity IDE Prototyping","Paper-Based Prototyping","Evolutionary Prototyping","Software Certification"],a:1,e:"Paper-Based Prototyping: a low-fidelity technique using hand drawings to explore design ideas and refine UI flows quickly."},
+{q:"A team has a solid understanding of system requirements and wants to test realistic functionality and interactive user flows with end-users using programming code inside an IDE. Which prototype fidelity level is required?",o:["Low-Fidelity Prototyping","Paper-Based Prototyping","High-Fidelity Prototyping","Throwaway Sketching"],a:2,e:"High-Fidelity Prototyping: created when developers know what to build, using code and IDEs to test with actual users."},
+{q:"A web developer uses tools such as Balsamiq Wireframes, Axure, MockFlow, or Adobe XD to link screen mockups together and evaluate user navigation paths before writing production code. What is the primary purpose of wireframing tools here?",o:["To build final executable production binaries","To arrange user interface pages and test visual appearances and user flows","To bypass software quality assurance routines","To satisfy mandatory legal software certifications"],a:1,e:"Wireframing tools reproduce interface mockups to arrange pages and create interactive prototypes for evaluating user flows."}
+];
+var L="ABCD",rand=false,order,idx,score,answered,log;
+var $=function(i){return document.getElementById(i)};
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function start(){
+  var ids=Q.map(function(_,i){return i});
+  order=(rand?shuffle(ids):ids).map(function(i){
+    var q=Q[i],oi=q.o.map(function(_,k){return k});
+    return {n:i+1,q:q.q,e:q.e,opts:(rand?shuffle(oi):oi).map(function(k){return {t:q.o[k],c:k===q.a}})};
+  });
+  idx=0;score=0;log=[];
+  $("quiz").classList.remove("hide");$("done").classList.add("hide");
+  $("mOrder").classList.toggle("on",!rand);$("mRand").classList.toggle("on",rand);
+  show();
+}
+function show(){
+  var q=order[idx];answered=false;
+  $("qt").textContent=(idx+1)+". "+q.q;
+  $("pos").textContent="Question "+(idx+1)+" of "+order.length+(rand?" (originally #"+q.n+")":"");
+  $("sc").textContent="Score: "+score;
+  $("fill").style.width=(idx/order.length*100)+"%";
+  var box=$("opts");box.innerHTML="";
+  q.opts.forEach(function(o,k){
+    var b=document.createElement("button");b.className="opt";
+    b.innerHTML="<b>"+L[k]+")</b><span></span>";b.lastChild.textContent=o.t;
+    b.onclick=function(){pick(k)};box.appendChild(b);
+  });
+  $("exp").classList.add("hide");$("next").classList.add("hide");
+}
+function pick(k){
+  if(answered)return;answered=true;
+  var q=order[idx],ok=q.opts[k].c;if(ok)score++;
+  log.push({n:q.n,ok:ok});
+  var bs=$("opts").children;
+  for(var i=0;i<bs.length;i++){bs[i].disabled=true;if(q.opts[i].c)bs[i].classList.add("ok");else if(i===k)bs[i].classList.add("bad")}
+  $("exp").innerHTML="<strong>"+(ok?"Correct. ":"Not quite. ")+"</strong>";
+  $("exp").appendChild(document.createTextNode(q.e));
+  $("exp").classList.remove("hide");
+  $("sc").textContent="Score: "+score;
+  $("next").textContent=idx===order.length-1?"See results":"Next question →";
+  $("next").classList.remove("hide");
+}
+$("next").onclick=function(){
+  if(idx<order.length-1){idx++;show()}else finish();
+};
+function finish(){
+  $("quiz").classList.add("hide");$("done").classList.remove("hide");
+  $("fill").style.width="100%";$("pos").textContent="Finished";
+  $("final").textContent=score+" / "+order.length;
+  $("msg").textContent=score===order.length?"Perfect score!":score>=7?"Great job. Review the ones you missed.":"Keep practicing. Try again to improve.";
+  $("rev").innerHTML=log.map(function(l){return "<li>"+(l.ok?"✅":"❌")+" Question "+l.n+"</li>"}).join("");
+}
+$("again").onclick=start;
+$("mOrder").onclick=function(){rand=false;start()};
+$("mRand").onclick=function(){rand=true;start()};
+start();
+</script>
+</body>
+</html>
