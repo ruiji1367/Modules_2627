@@ -52,7 +52,7 @@ button.on{background:var(--accent);color:var(--accent-t);border-color:var(--acce
     <p class="q" id="qt"></p>
     <div id="opts"></div>
     <div class="exp hide" id="exp"></div>
-    <div class="nav"><button id="next" class="on hide"></button></div>
+    <div class="nav"><button id="next" class="on"></button></div>
   </div>
   <div class="card hide" id="done">
     <div class="center">Quiz complete</div>
@@ -89,6 +89,11 @@ function start(){
   $("mOrder").classList.toggle("on",!rand);$("mRand").classList.toggle("on",rand);
   show();
 }
+function nextLabel(){
+  var last=idx===order.length-1;
+  if(answered)return last?"See results":"Next question →";
+  return last?"Skip & finish":"Skip →";
+}
 function show(){
   var q=order[idx];answered=false;
   $("qt").textContent=(idx+1)+". "+q.q;
@@ -101,7 +106,8 @@ function show(){
     b.innerHTML="<b>"+L[k]+")</b><span></span>";b.lastChild.textContent=o.t;
     b.onclick=function(){pick(k)};box.appendChild(b);
   });
-  $("exp").classList.add("hide");$("next").classList.add("hide");
+  $("exp").classList.add("hide");
+  $("next").textContent=nextLabel();
 }
 function pick(k){
   if(answered)return;answered=true;
@@ -113,10 +119,10 @@ function pick(k){
   $("exp").appendChild(document.createTextNode(q.e));
   $("exp").classList.remove("hide");
   $("sc").textContent="Score: "+score;
-  $("next").textContent=idx===order.length-1?"See results":"Next question →";
-  $("next").classList.remove("hide");
+  $("next").textContent=nextLabel();
 }
 $("next").onclick=function(){
+  if(!answered)log.push({n:order[idx].n,ok:null});
   if(idx<order.length-1){idx++;show()}else finish();
 };
 function finish(){
@@ -124,7 +130,7 @@ function finish(){
   $("fill").style.width="100%";$("pos").textContent="Finished";
   $("final").textContent=score+" / "+order.length;
   $("msg").textContent=score===order.length?"Perfect score!":score>=7?"Great job. Review the ones you missed.":"Keep practicing. Try again to improve.";
-  $("rev").innerHTML=log.map(function(l){return "<li>"+(l.ok?"✅":"❌")+" Question "+l.n+"</li>"}).join("");
+  $("rev").innerHTML=log.map(function(l){return "<li>"+(l.ok===null?"⏭️":l.ok?"✅":"❌")+" Question "+l.n+(l.ok===null?" (skipped)":"")+"</li>"}).join("");
 }
 $("again").onclick=start;
 $("mOrder").onclick=function(){rand=false;start()};
