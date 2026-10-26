@@ -30,7 +30,9 @@ button.on{background:var(--accent);color:var(--accent-t);border-color:var(--acce
 .opt:disabled{cursor:default}
 .exp{margin-top:6px;padding:12px;border-radius:10px;background:var(--bg);font-size:.92rem;line-height:1.5;color:var(--muted)}
 .exp strong{color:var(--text)}
-.nav{display:flex;justify-content:flex-end;margin-top:16px}
+.nav{display:flex;justify-content:space-between;gap:8px;margin-top:16px}
+.nav button:only-child{margin-left:auto}
+#back:disabled{opacity:.4;cursor:default}
 .hide{display:none}
 .score{font-size:2.4rem;font-weight:700;text-align:center;margin:8px 0}
 .center{text-align:center;color:var(--muted)}
@@ -52,7 +54,7 @@ button.on{background:var(--accent);color:var(--accent-t);border-color:var(--acce
     <p class="q" id="qt"></p>
     <div id="opts"></div>
     <div class="exp hide" id="exp"></div>
-    <div class="nav"><button id="next" class="on"></button></div>
+    <div class="nav"><button id="back">← Back</button><button id="next" class="on"></button></div>
   </div>
   <div class="card hide" id="done">
     <div class="center">Quiz complete</div>
@@ -75,7 +77,7 @@ var Q=[
 {q:"A team has a solid understanding of system requirements and wants to test realistic functionality and interactive user flows with end-users using programming code inside an IDE. Which prototype fidelity level is required?",o:["Low-Fidelity Prototyping","Paper-Based Prototyping","High-Fidelity Prototyping","Throwaway Sketching"],a:2,e:"High-Fidelity Prototyping: created when developers know what to build, using code and IDEs to test with actual users."},
 {q:"A web developer uses tools such as Balsamiq Wireframes, Axure, MockFlow, or Adobe XD to link screen mockups together and evaluate user navigation paths before writing production code. What is the primary purpose of wireframing tools here?",o:["To build final executable production binaries","To arrange user interface pages and test visual appearances and user flows","To bypass software quality assurance routines","To satisfy mandatory legal software certifications"],a:1,e:"Wireframing tools reproduce interface mockups to arrange pages and create interactive prototypes for evaluating user flows."}
 ];
-var L="ABCD",rand=false,order,idx,score,answered,log;
+var L="ABCD",rand=false,order,idx,score,answered,ans;
 var $=function(i){return document.getElementById(i)};
 function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
 function start(){
@@ -84,7 +86,7 @@ function start(){
     var q=Q[i],oi=q.o.map(function(_,k){return k});
     return {n:i+1,q:q.q,e:q.e,opts:(rand?shuffle(oi):oi).map(function(k){return {t:q.o[k],c:k===q.a}})};
   });
-  idx=0;score=0;log=[];
+  idx=0;score=0;ans=order.map(function(){return null});
   $("quiz").classList.remove("hide");$("done").classList.add("hide");
   $("mOrder").classList.toggle("on",!rand);$("mRand").classList.toggle("on",rand);
   show();
@@ -95,7 +97,7 @@ function nextLabel(){
   return last?"Skip & finish":"Skip →";
 }
 function show(){
-  var q=order[idx];answered=false;
+  var q=order[idx];answered=ans[idx]!==null;
   $("qt").textContent=(idx+1)+". "+q.q;
   $("pos").textContent="Question "+(idx+1)+" of "+order.length+(rand?" (originally #"+q.n+")":"");
   $("sc").textContent="Score: "+score;
@@ -108,11 +110,16 @@ function show(){
   });
   $("exp").classList.add("hide");
   $("next").textContent=nextLabel();
+  $("back").disabled=idx===0;
+  if(answered)reveal(ans[idx]);
 }
 function pick(k){
-  if(answered)return;answered=true;
-  var q=order[idx],ok=q.opts[k].c;if(ok)score++;
-  log.push({n:q.n,ok:ok});
+  if(answered)return;answered=true;ans[idx]=k;
+  score=ans.reduce(function(s,a,i){return s+(a!==null&&order[i].opts[a].c?1:0)},0);
+  reveal(k);
+}
+function reveal(k){
+  var q=order[idx],ok=q.opts[k].c;
   var bs=$("opts").children;
   for(var i=0;i<bs.length;i++){bs[i].disabled=true;if(q.opts[i].c)bs[i].classList.add("ok");else if(i===k)bs[i].classList.add("bad")}
   $("exp").innerHTML="<strong>"+(ok?"Correct. ":"Not quite. ")+"</strong>";
@@ -122,15 +129,15 @@ function pick(k){
   $("next").textContent=nextLabel();
 }
 $("next").onclick=function(){
-  if(!answered)log.push({n:order[idx].n,ok:null});
   if(idx<order.length-1){idx++;show()}else finish();
 };
+$("back").onclick=function(){if(idx>0){idx--;show()}};
 function finish(){
   $("quiz").classList.add("hide");$("done").classList.remove("hide");
   $("fill").style.width="100%";$("pos").textContent="Finished";
   $("final").textContent=score+" / "+order.length;
   $("msg").textContent=score===order.length?"Perfect score!":score>=7?"Great job. Review the ones you missed.":"Keep practicing. Try again to improve.";
-  $("rev").innerHTML=log.map(function(l){return "<li>"+(l.ok===null?"⏭️":l.ok?"✅":"❌")+" Question "+l.n+(l.ok===null?" (skipped)":"")+"</li>"}).join("");
+  $("rev").innerHTML=ans.map(function(a,i){var ok=a===null?null:order[i].opts[a].c;return "<li>"+(ok===null?"⏭️":ok?"✅":"❌")+" Question "+order[i].n+(ok===null?" (skipped)":"")+"</li>"}).join("");
 }
 $("again").onclick=start;
 $("mOrder").onclick=function(){rand=false;start()};
