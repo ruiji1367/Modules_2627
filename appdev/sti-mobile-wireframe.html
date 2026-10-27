@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STI Education System – Mobile Wireframe</title>
+<style>
+:root{--b:#0b5cab;--bd:#08407a;--y:#ffc20e;--bg:#f2f5f9;--ink:#1c2733;--mut:#6b7a8c;--line:#d9e0e8;--w:#fff;--ok:#2e8b57;--warn:#c77700}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:#e4e9f0;color:var(--ink);padding:20px}
+h1{font-size:22px;color:var(--bd)}
+.top{max-width:1200px;margin:0 auto 18px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.top p{color:var(--mut);font-size:13px;margin-top:2px}
+.modes button,.picker button{font:600 13px inherit;font-family:inherit;border:1px solid var(--b);background:#fff;color:var(--b);padding:8px 14px;cursor:pointer}
+.modes button:first-child{border-radius:8px 0 0 8px}.modes button:last-child{border-radius:0 8px 8px 0;border-left:0}
+.modes button.on,.picker button.on{background:var(--b);color:#fff}
+button:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+#preview{display:flex;gap:28px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+.picker{display:flex;flex-direction:column;gap:6px;min-width:190px}
+.picker button{border-radius:8px;text-align:left}
+.picker small{color:var(--mut);font-size:12px;margin-bottom:4px}
+#overview{max-width:1300px;margin:0 auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:26px 14px;justify-items:center}
+.cell{text-align:center}
+.cell .cap{font-weight:600;font-size:14px;margin-bottom:8px;color:var(--bd)}
+.cell .frame{zoom:.8}
+.hide{display:none!important}
+
+/* phone */
+.phone{width:410px;height:864px;background:#14202e;border-radius:50px;padding:10px;position:relative;box-shadow:0 14px 34px rgba(8,30,60,.28)}
+.screen{width:390px;height:844px;background:var(--bg);border-radius:40px;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.status{height:30px;background:var(--bd);color:#fff;font-size:12px;display:flex;justify-content:space-between;align-items:center;padding:4px 22px 0;flex:none}
+.hdr{background:var(--b);color:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px;flex:none;min-height:54px}
+.hdr b{font-size:17px;flex:1}
+.ib{background:rgba(255,255,255,.16);border:0;color:#fff;width:34px;height:34px;border-radius:8px;cursor:pointer;display:grid;place-items:center;padding:0}
+.logo{background:var(--y);color:var(--bd);font-weight:800;padding:3px 8px;border-radius:4px;font-size:14px;letter-spacing:.5px}
+.body{flex:1;overflow-y:auto;padding:14px}
+.nav{flex:none;display:flex;background:#fff;border-top:1px solid var(--line);padding:6px 4px 14px}
+.nav button{flex:1;background:none;border:0;font:600 10.5px inherit;font-family:inherit;color:var(--mut);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px}
+.nav button span{display:flex;align-items:center;justify-content:center;height:28px;padding:0 16px;border-radius:14px}
+.nav button.on{color:var(--b)}
+.nav button.on span{background:var(--y);color:var(--bd)}
+.drawer{position:absolute;inset:0;background:rgba(10,25,45,.5);display:none;z-index:5}
+.drawer.open{display:block}
+.drawer nav{width:250px;height:100%;background:#fff;padding:44px 0 0}
+.drawer .who{padding:10px 16px 14px;border-bottom:1px solid var(--line);margin-bottom:6px;font-size:13px}
+.drawer button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:0;padding:13px 18px;font:600 14px inherit;font-family:inherit;color:var(--ink);cursor:pointer}
+.drawer button:hover{background:var(--bg)}
+
+/* components */
+.fr{display:inline-block;background:var(--y);color:#3a2b00;font:700 10px/1 inherit;font-family:inherit;padding:3px 6px;border-radius:4px;vertical-align:middle}
+.row{display:flex;align-items:center;gap:8px}
+.sp{justify-content:space-between}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+.card h4{font-size:14px;margin-bottom:2px}
+.sub{font-size:12px;color:var(--mut)}
+.sec{font-size:15px;font-weight:700;margin:14px 0 8px;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.sec:first-child{margin-top:0}
+.thumb{width:48px;height:48px;border-radius:10px;background:#dce9f7;color:var(--bd);flex:none;display:grid;place-items:center;font-size:20px}
+.bar{height:6px;background:#e3e9f0;border-radius:3px;margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--b)}
+.chip{font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;background:#e3e9f0;color:var(--mut);white-space:nowrap}
+.chip.ok{background:#dff2e7;color:var(--ok)}.chip.warn{background:#fff0d6;color:var(--warn)}.chip.b{background:#dce9f7;color:var(--b)}
+.btn{display:block;width:100%;background:var(--b);color:#fff;border:0;border-radius:10px;padding:13px;font:700 15px inherit;font-family:inherit;cursor:pointer}
+.btn.o{background:#fff;color:var(--b);border:1.5px solid var(--b);padding:9px;font-size:13px}
+.inp{width:100%;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:12px;font-size:14px;margin-bottom:12px;color:var(--mut)}
+label{font-size:12px;font-weight:600;display:block;margin-bottom:4px}
+.search{gap:8px;background:#fff;border:1.5px solid var(--line);border-radius:22px;padding:10px 14px;color:var(--mut);font-size:14px;margin-bottom:10px}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tabs button{flex:1;border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 2px;font:600 12px inherit;font-family:inherit;cursor:pointer;color:var(--ink)}
+.tabs button.on{background:var(--b);color:#fff;border-color:var(--b)}
+.mod{display:flex;gap:10px;align-items:flex-start}
+.mod .n{width:30px;height:30px;border-radius:50%;background:var(--b);color:#fff;font-weight:700;display:grid;place-items:center;font-size:13px;flex:none}
+.mod ul{margin:6px 0 0 16px;font-size:12px;color:var(--mut);line-height:1.6}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;font-size:12px}
+.cal b{color:var(--mut);font-size:11px;padding:4px 0}
+.cal span{padding:8px 0;border-radius:8px;position:relative}
+.cal span.ev{background:#dce9f7;font-weight:700;color:var(--b)}
+.cal span.ev::after{content:"";position:absolute;bottom:3px;left:50%;width:4px;height:4px;margin-left:-2px;background:var(--y);border-radius:50%}
+.cal span.today{background:var(--b);color:#fff}
+.avatar{width:84px;height:84px;border-radius:50%;background:#dce9f7;color:var(--bd);margin:0 auto 8px;display:grid;place-items:center;font-size:36px;border:4px solid var(--y)}
+.kv{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.kv:last-child{border:0}.kv span:first-child{color:var(--mut)}
+.login{background:linear-gradient(var(--b),var(--bd));justify-content:center}
+.login .body{display:flex;flex-direction:column;justify-content:center;color:#fff}
+.login .form{background:#fff;color:var(--ink);border-radius:16px;padding:18px;margin-top:20px}
+
+table{border-collapse:collapse;width:100%;background:#fff;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 12px;text-align:left}
+th{background:var(--b);color:#fff}
+.tbl{max-width:1100px;margin:30px auto 0;overflow-x:auto}
+.tbl h2{font-size:18px;color:var(--bd);margin-bottom:10px}
+@media(max-width:460px){.phone{zoom:.85}}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div>
+    <h1>STI Education System – Mobile LMS Wireframe</h1>
+    <p>Static UI wireframe · 8 functional requirements · yellow tags mark each FR</p>
+  </div>
+  <div class="modes">
+    <button id="m1" class="on">Mobile Preview</button><button id="m2">All Screens Overview</button>
+  </div>
+</div>
+
+<section id="preview">
+  <div class="picker" id="picker"></div>
+  <div id="stage"></div>
+</section>
+
+<section id="overview" class="hide">
+  <div class="grid" id="grid"></div>
+  <div class="tbl">
+    <h2>Functional Requirements Summary</h2>
+    <table>
+      <tr><th>ID</th><th>Category</th><th>Functional Requirement</th><th>Mobile UI Element</th></tr>
+      <tr><td>FR-01</td><td>User Management</td><td>Login</td><td>Login Form</td></tr>
+      <tr><td>FR-02</td><td>User Management</td><td>Profile</td><td>Profile Screen</td></tr>
+      <tr><td>FR-03</td><td>Course Management</td><td>View Courses</td><td>Course Cards</td></tr>
+      <tr><td>FR-04</td><td>Course Management</td><td>Search Courses</td><td>Search Bar</td></tr>
+      <tr><td>FR-05</td><td>Content Management</td><td>View Modules</td><td>Module List</td></tr>
+      <tr><td>FR-06</td><td>Content Management</td><td>View Resources</td><td>Resource Cards</td></tr>
+      <tr><td>FR-07</td><td>Academic Management</td><td>View Assignments</td><td>Assignment Cards</td></tr>
+      <tr><td>FR-08</td><td>Academic Management</td><td>View Calendar</td><td>Calendar Screen</td></tr>
+    </table>
+  </div>
+</section>
+
+<script>
+const IC={
+home:'<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+book:'<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>',
+tasks:'<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4M12 16h4M8 11h.01M8 16h.01"/>',
+cal:'<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+user:'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
+search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',
+left:'<path d="m15 18-6-6 6-6"/>',
+right:'<path d="m9 18 6-6-6-6"/>',
+globe:'<circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
+layers:'<path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/>',
+network:'<rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3M12 12V8"/>',
+db:'<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/>',
+doc:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"/>',
+slides:'<path d="M2 3h20"/><path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"/><path d="m7 21 5-5 5 5"/>',
+clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+signal:'<path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 4v16"/>',
+battery:'<rect x="2" y="7" width="16" height="10" rx="2"/><path d="M22 11v2"/>'};
+const ic=(n,s=20)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block">${IC[n]}</svg>`;
+const fr=(id,t)=>`<span class="fr">${id} — ${t}</span>`;
+const hdr=(t,back)=>`<div class="hdr">${back?`<button class="ib" data-go="${back}" aria-label="Back">${ic("left",20)}</button>`:`<button class="ib" data-menu aria-label="Menu">${ic("menu",20)}</button>`}<b>${t}</b><span class="logo">STI</span></div>`;
+const NAV=[["dash","home","Home"],["courses","book","Courses"],["assign","tasks","Tasks"],["cal","cal","Calendar"],["profile","user","Profile"]];
+const nav=a=>`<div class="nav">${NAV.map(n=>`<button data-go="${n[0]}" class="${n[0]==a?'on':''}"><span>${ic(n[1],20)}</span>${n[2]}</button>`).join("")}</div>`;
+const drawer=`<div class="drawer" data-close><nav><div class="who"><b>Juan Dela Cruz</b><div class="sub">BSIT · 2nd Year</div></div>
+${NAV.map(n=>`<button data-go="${n[0]}">${ic(n[1],18)}<i style="font-style:normal">${n[2]==="Tasks"?"Assignments":n[2]==="Home"?"Dashboard":n[2]}</i></button>`).join("")}
+<button data-go="login">${ic("logout",18)}<i style="font-style:normal">Log out</i></button></nav></div>`;
+const wrap=(inner,cls="")=>`<div class="screen ${cls}"><div class="status"><span>9:41</span><span class="row" style="gap:6px">${ic("signal",14)}${ic("battery",16)}</span></div>${inner}${drawer}</div>`;
+
+const COURSES=[
+ ["WEB301","Web Systems and Technologies","Mr. R. Santos","68","globe"],
+ ["DSA201","Data Structures and Algorithms","Ms. L. Reyes","45","layers"],
+ ["NET202","Networking 2","Mr. J. Bautista","80","network"],
+ ["DBM202","Database Management Systems","Ms. A. Cruz","32","db"]];
+const courseCard=c=>`<div class="card" data-go="detail" style="cursor:pointer"><div class="row"><div class="thumb">${ic(c[4],24)}</div><div style="flex:1"><h4>${c[1]}</h4><div class="sub">${c[0]} · ${c[2]}</div></div><span style="color:var(--mut)">${ic("right",18)}</span></div><div class="bar"><i style="width:${c[3]}%"></i></div><div class="sub" style="margin-top:4px">${c[3]}% complete</div></div>`;
+
+const days=[...Array(30)].map((_,i)=>i+1), EV=[5,12,18,25], TODAY=3;
+const SCREENS={
+login:{t:"Login",fr:"FR-01",html:()=>wrap(`<div class="body"><div style="text-align:center"><span class="logo" style="font-size:30px;padding:8px 18px">STI</span><h2 style="margin-top:14px">STI Education System</h2><div style="opacity:.8;font-size:13px">Learning Management System</div></div>
+<div class="form"><div style="margin-bottom:10px">${fr("FR-01","Login")}</div><label>Email address</label><div class="inp">juan.delacruz@sti.edu.ph</div><label>Password</label><div class="inp">••••••••••</div><button class="btn" data-go="dash">Log in</button><div class="sub" style="text-align:center;margin-top:12px">Forgot password?</div></div></div>`,"login")},
+
+dash:{t:"Dashboard",html:()=>wrap(`${hdr("Dashboard")}<div class="body"><div class="card" style="background:var(--b);color:#fff;border:0"><div class="sub" style="color:#cfe0f5">Welcome back,</div><h3>Juan Dela Cruz</h3><div style="font-size:12px;margin-top:4px">1st Semester · AY 2026–2027</div></div>
+<div class="search row">${ic("search",16)}Search courses…</div>
+<div class="sec"><span>My Courses</span>${fr("FR-03","Enrolled Courses")}</div>${COURSES.slice(0,2).map(courseCard).join("")}
+<button class="btn o" data-go="courses">View all courses</button>
+<div class="sec"><span>Due Soon</span></div><div class="card row sp"><div><h4>Laboratory Activity 3</h4><div class="sub">WEB301 · Nov 5, 11:59 PM</div></div><span class="chip warn">2 days</span></div></div>${nav("dash")}`)},
+
+courses:{t:"Courses",html:()=>wrap(`${hdr("My Courses")}<div class="body"><div class="row" style="margin-bottom:6px">${fr("FR-04","Course Search")}</div><div class="search row">${ic("search",16)}Search by course name…</div>
+<div class="sec"><span>Enrolled (4)</span>${fr("FR-03","Enrolled Courses")}</div>${COURSES.map(courseCard).join("")}</div>${nav("courses")}`)},
+
+detail:{t:"Course Details",html:()=>wrap(`${hdr("WEB301","courses")}<div class="body"><div class="card"><div class="row"><div class="thumb">${ic("globe",24)}</div><div><h4>Web Systems and Technologies</h4><div class="sub">Mr. R. Santos · 3 units</div></div></div><div class="bar"><i style="width:68%"></i></div></div>
+<div class="tabs"><button class="on">Modules</button><button data-go="res">Resources</button><button data-go="assign">Tasks</button></div>
+<button class="btn" data-go="mods" style="margin-bottom:10px">Open Learning Modules</button><button class="btn o" data-go="res">Open Learning Resources</button>
+<div class="sec"><span>About this course</span></div><div class="card sub" style="line-height:1.5">Covers HTML, CSS, JavaScript and server-side basics for building web systems. 6 modules · 12 resources · 4 assignments.</div></div>${nav("courses")}`)},
+
+mods:{t:"Learning Modules",html:()=>wrap(`${hdr("Modules","detail")}<div class="body"><div class="sec"><span>WEB301 Modules</span>${fr("FR-05","Learning Modules")}</div>
+${[["Introduction to Web Systems","Lesson 1 · Lesson 2","ok","Done"],["HTML and Semantic Markup","Lesson 3 · Lesson 4","ok","Done"],["CSS Layout and Responsive Design","Lesson 5 · Quiz 1","b","In progress"],["JavaScript Fundamentals","Lesson 6 · Lesson 7","","Not started"],["Server-side Basics","Lesson 8 · Lesson 9","","Locked"]].map((m,i)=>`<div class="card mod"><div class="n">${i+1}</div><div style="flex:1"><div class="row sp"><h4>${m[0]}</h4></div><div class="sub">${m[1]}</div><div style="margin-top:6px"><span class="chip ${m[2]}">${m[3]}</span></div></div></div>`).join("")}</div>${nav("courses")}`)},
+
+res:{t:"Learning Resources",html:()=>wrap(`${hdr("Resources","detail")}<div class="body"><div class="sec"><span>Module 3 Resources</span>${fr("FR-06","Learning Resources")}</div>
+${[["doc","CSS Flexbox Guide.pdf","Document · 1.2 MB"],["slides","Responsive Design Lecture.pptx","Presentation · 4.8 MB"],["doc","Grid Layout Cheat Sheet.pdf","Document · 640 KB"],["slides","Media Queries Slides.pptx","Presentation · 3.1 MB"],["doc","Laboratory Guide 3.docx","Document · 380 KB"]].map(r=>`<div class="card row"><div class="thumb">${ic(r[0],24)}</div><div style="flex:1"><h4>${r[1]}</h4><div class="sub">${r[2]}</div></div><span class="chip b">View</span></div>`).join("")}</div>${nav("courses")}`)},
+
+assign:{t:"Assignments",html:()=>wrap(`${hdr("Assignments")}<div class="body"><div class="sec"><span>All Assignments</span>${fr("FR-07","Assignments")}</div>
+<div class="tabs"><button class="on">Upcoming</button><button>Submitted</button><button>Missed</button></div>
+${[["Laboratory Activity 3","WEB301","Nov 5, 11:59 PM","warn","Due in 2 days"],["Case Study: Linked Lists","DSA201","Nov 9, 5:00 PM","b","Due in 6 days"],["Network Topology Diagram","NET202","Nov 12, 11:59 PM","b","Due in 9 days"],["ER Diagram Exercise","DBM202","Nov 18, 11:59 PM","","Due in 15 days"]].map(a=>`<div class="card"><div class="row sp"><h4>${a[0]}</h4><span class="chip ${a[3]}">${a[4]}</span></div><div class="sub" style="margin-top:4px">${a[1]}</div><div class="sub row" style="gap:5px;margin-top:2px">${ic("clock",13)}Deadline: ${a[2]}</div></div>`).join("")}</div>${nav("assign")}`)},
+
+cal:{t:"Calendar",html:()=>wrap(`${hdr("Calendar")}<div class="body"><div class="sec"><span>November 2026</span>${fr("FR-08","Calendar")}</div>
+<div class="card"><div class="cal">${["S","M","T","W","T","F","S"].map(d=>`<b>${d}</b>`).join("")}${days.map(d=>`<span class="${EV.includes(d)?'ev':''} ${d==TODAY?'today':''}" ${d==1?'style="grid-column-start:1"':''}>${d}</span>`).join("")}</div></div>
+<div class="sec"><span>Scheduled Activities</span></div>
+${[["Nov 5","Laboratory Activity 3 due","WEB301"],["Nov 12","Networking 2 Quiz","NET202"],["Nov 18","Midterm Exam: DBMS","DBM202"],["Nov 25","Project Presentation","DSA201"]].map(e=>`<div class="card row"><div class="thumb" style="font-size:12px;font-weight:700;text-align:center;background:#dce9f7;color:var(--b)">${e[0]}</div><div><h4>${e[1]}</h4><div class="sub">${e[2]}</div></div></div>`).join("")}</div>${nav("cal")}`)},
+
+profile:{t:"Profile",html:()=>wrap(`${hdr("Profile")}<div class="body"><div class="row" style="justify-content:center;margin-bottom:8px">${fr("FR-02","Profile")}</div><div class="avatar">${ic("user",40)}</div><div style="text-align:center;margin-bottom:12px"><h3>Juan Dela Cruz</h3><div class="sub">Student</div></div>
+<div class="card"><div class="kv"><span>Student No.</span><span>02000-123456</span></div><div class="kv"><span>Email</span><span>juan.delacruz@sti.edu.ph</span></div><div class="kv"><span>Program</span><span>BSIT</span></div><div class="kv"><span>Year Level</span><span>2nd Year</span></div><div class="kv"><span>Campus</span><span>STI College – Fairview</span></div></div>
+<button class="btn o" data-go="login">Log out</button></div>${nav("profile")}`)}
+};
+const ORDER=Object.keys(SCREENS);
+let cur="login";
+
+function phone(id){return `<div class="phone">${SCREENS[id].html()}</div>`}
+function show(id){
+  cur=id;
+  document.getElementById("stage").innerHTML=phone(id);
+  document.getElementById("picker").innerHTML='<small>Jump to screen</small>'+ORDER.map(k=>`<button data-pick="${k}" class="${k==id?'on':''}">${SCREENS[k].t}${SCREENS[k].fr?" · "+SCREENS[k].fr:""}</button>`).join("");
+}
+document.getElementById("grid").innerHTML=ORDER.map(k=>`<div class="cell"><div class="cap">${SCREENS[k].t}</div><div class="frame">${phone(k)}</div></div>`).join("");
+function mode(n){
+  document.getElementById("preview").classList.toggle("hide",n!=1);
+  document.getElementById("overview").classList.toggle("hide",n!=2);
+  m1.classList.toggle("on",n==1);m2.classList.toggle("on",n==2);
+}
+m1.onclick=()=>mode(1);m2.onclick=()=>mode(2);
+document.addEventListener("click",e=>{
+  const p=e.target.closest("[data-pick]");if(p){show(p.dataset.pick);return}
+  const g=e.target.closest("[data-go]");
+  if(g){e.stopPropagation();show(g.dataset.go);mode(1);window.scrollTo(0,0);return}
+  const m=e.target.closest("[data-menu]");
+  if(m){m.closest(".screen").querySelector(".drawer").classList.add("open");return}
+  const c=e.target.closest("[data-close]");
+  if(c&&!e.target.closest(".drawer nav"))c.classList.remove("open");
+});
+show("login");
+</script>
+</body>
+</html>
